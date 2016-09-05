@@ -4,12 +4,18 @@ var addRoadVar = 0;
 function setup() {
 	createCanvas(1200,700);
 	fullscreen();
-	addRoad(0,0,100,100,80,500,width,height);
-	addRoad(100,100,100,100,80,500,1000,700);
+	addRoad(50,50,
 }
 
 function draw() {
+	background(128);
 	drawRoadLines();
+	
+}
+
+function mousePressed(){
+	console.log("X:");console.log(mouseX);
+	console.log("Y:");console.log(mouseY);
 }
 
 function addRoad(x1,y1,x2,y2,x3,y3,x4,y4){
