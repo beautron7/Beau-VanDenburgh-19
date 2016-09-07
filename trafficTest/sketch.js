@@ -20,6 +20,7 @@ function draw() {
 	background(128);
 	stroke(0,255,0);drawRoadLines();
 	stroke(0,0,0);drawGrid(100);
+	// console.log(getRoadLength(1));
 }
 
 function drawGrid(gridDivision){
@@ -53,9 +54,8 @@ function addRoad(x1,y1,x2,y2,x3,y3,x4,y4){
 	roads[addRoadVar][7] = y4;
 	roads[addRoadVar][8] = 0;   //num of connected roads
 	roads[addRoadVar][9] = [];  //connected roads
-	console.log(getRoadLength(addRoadVar));
+	roads[addRoadVar][10] = getRoadLength(addRoadVar); //length of road
 	addRoadVar++;
-	
 }
 
 function connectRoads(roadA,roadB,verbose){
@@ -123,7 +123,7 @@ function drawRoadLines(){
 	}
 	pop();
 }
-function getRoadLength(roadX){ //Broken rn
+function getRoadLength(roadX){
 	var x1 = roads[roadX][0];
 	var y1 = roads[roadX][1];
 	var x2 = roads[roadX][2];
@@ -133,17 +133,20 @@ function getRoadLength(roadX){ //Broken rn
 	var x4 = roads[roadX][6];
 	var y4 = roads[roadX][7];
 	var detail = 10;
-	var previousValue = x1;
+	var previousXValue = x1;
+	var previousYValue = y1;
 	var totalXvalue = 0;
 	var totalYvalue = 0;
 	for(var k = 0; k <= detail; k++){
-		totalXvalue += abs(previousValue-bezierPoint(x1,x2,x3,x4,k/detail));
-		previousValue = bezierPoint(x1,x2,x3,x4,k/detail);
+		totalXvalue += abs(previousXValue-bezierPoint(x1,x2,x3,x4,k/detail));
+		previousXValue = bezierPoint(x1,x2,x3,x4,k/detail);
+		totalYvalue += abs(previousYValue-bezierPoint(y1,y2,y3,y4,k/detail));
+		previousYValue = bezierPoint(y1,y2,y3,y4,k/detail);
+		// ellipse(previousXValue,previousYValue,10);
 	}
-	previousValue = y1;
-	for(var k = 0; k <= detail; k++){
-		totalYvalue += abs(previousValue-bezierPoint(y1,y2,y3,y4,k/detail));
-		previousValue = bezierPoint(y1,y2,y3,y4,k/detail);
-	}
-	return sqrt(totalYvalue^2+totalXvalue^2);
+	return sqrt(totalYvalue*totalYvalue+totalXvalue*totalXvalue);
+}
+
+function getPointOnRoad(roadX,time){
+	return createVector(bezierPoint(roads[roadX][0],roads[roadX][2],roads[roadX][4],roads[roadX][6],time),bezierPoint(roads[roadX][1],roads[roadX][3],roads[roadX][5],roads[roadX][7],time));
 }
