@@ -4,12 +4,16 @@ var addRoadVar = 0;
 function setup() {
 	createCanvas(600,700);
 	frameRate(10);
-	quickRoad(120,90,280,90); 
+	quickRoad(280,90,120,90); //0
 	quickRoad(120,110,280,110);
-	quickRoad(290,20,290,80);
-	quickRoad(310,20,310,80);
-	quickRoad(120,90,120,110);
-	console.log(connectRoads(1,4));
+	quickRoad(290,20,290,80); //2
+	quickRoad(310,80,310,20);
+	quickRoad(280,110,310,80); //4
+	quickRoad(290,120,290,180);
+	quickRoad(310,180,310,120); //6
+	quickRoad(310,120,310,80);
+	quickRoad(310,120,280,90);
+	autoConnectRoads();
 }
 
 function draw() {
@@ -49,33 +53,58 @@ function addRoad(x1,y1,x2,y2,x3,y3,x4,y4){
 	roads[addRoadVar][7] = y4;
 	roads[addRoadVar][8] = 0;   //num of connected roads
 	roads[addRoadVar][9] = [];  //connected roads
+	console.log(getRoadLength(addRoadVar));
 	addRoadVar++;
 	
 }
 
-function connectRoads(roadA,roadB){
+function connectRoads(roadA,roadB,verbose){
 	//check to see if roads intersect
-	if(
-		roads[roadA][0]===roads[roadB][0]||
-	   roads[roadA][0]===roads[roadB][6]||
-	   roads[roadA][6]===roads[roadB][0]||
-	   roads[roadA][6]===roads[roadB][6] &&
-	   roads[roadA][1]===roads[roadB][1]||
-	   roads[roadA][1]===roads[roadB][7]||
-	   roads[roadA][7]===roads[roadB][1]||
-	   roads[roadA][7]===roads[roadB][7]&&
-	   !(roadA===roadB) 
-	  )
+	verbose = verbose || false;
+	if(roads[roadA][6]===roads[roadB][0] && roads[roadA][7]===roads[roadB][1]) //is the end of roadA equal to the starto f roadB
 	{
 		roads[roadA][9][roads[roadA][8]] = roadB;
 		roads[roadA][8]++;
 		roads[roadB][9][roads[roadB][8]] = roadA;
 		roads[roadB][8]++;
 		return true;
-	} else {
+	} else if (verbose) {
+		if
+		(
+			roads[roadA][0]===roads[roadB][0]||
+		   roads[roadA][0]===roads[roadB][6]||
+		   roads[roadA][6]===roads[roadB][0]||
+		   roads[roadA][6]===roads[roadB][6]&&
+		   roads[roadA][1]===roads[roadB][1]||
+		   roads[roadA][1]===roads[roadB][7]||
+		   roads[roadA][7]===roads[roadB][1]||
+		   roads[roadA][7]===roads[roadB][7]
+		)
+		{
+			if(roadA===roadB){
+				console.log("connectRoads: The Roads Are the same");
+				console.log(roadA);
+			} else {
+				console.log("connectRoads: The Roads (see next line) are not oriented correctly");
+				console.log(roadA);
+				console.log(roadB);
+			}
+		} else  {
+			console.log("connectRoads: The Roads (see next line) share no common endpoints");
+			console.log(roadA);
+			console.log(roadB);
+		}
+		
 		return false;
 	}
-	
+}
+
+function autoConnectRoads(){
+	for(var i = 0; i < addRoadVar; i++){
+		for(var j = 0; j < addRoadVar; j++){
+			connectRoads(i,j,false);
+		}
+	}
 }
 
 function drawRoadLines(){
@@ -93,4 +122,28 @@ function drawRoadLines(){
 		bezier(x1,y1,x2,y2,x3,y3,x4,y4);
 	}
 	pop();
+}
+function getRoadLength(roadX){ //Broken rn
+	var x1 = roads[roadX][0];
+	var y1 = roads[roadX][1];
+	var x2 = roads[roadX][2];
+	var y2 = roads[roadX][3];
+	var x3 = roads[roadX][4];
+	var y3 = roads[roadX][5];
+	var x4 = roads[roadX][6];
+	var y4 = roads[roadX][7];
+	var detail = 10;
+	var previousValue = x1;
+	var totalXvalue = 0;
+	var totalYvalue = 0;
+	for(var k = 0; k <= detail; k++){
+		totalXvalue += abs(previousValue-bezierPoint(x1,x2,x3,x4,k/detail));
+		previousValue = bezierPoint(x1,x2,x3,x4,k/detail);
+	}
+	previousValue = y1;
+	for(var k = 0; k <= detail; k++){
+		totalYvalue += abs(previousValue-bezierPoint(y1,y2,y3,y4,k/detail));
+		previousValue = bezierPoint(y1,y2,y3,y4,k/detail);
+	}
+	return sqrt(totalYvalue^2+totalXvalue^2);
 }
