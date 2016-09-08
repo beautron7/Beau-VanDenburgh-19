@@ -1,12 +1,8 @@
 //image of car used: http://opengameart.org/content/red-car-top-down
 //all other declared functions (within the scope of this program) are my own
 
-var roads = []; 
-var cars = [];
-var addRoadVar = 0;
-
 function preload() {
-  img = loadImage("assets/layer1.png");
+  carImage = loadImage("assets/layer1.png");
 }
 
 function setup() {
@@ -27,112 +23,18 @@ function setup() {
 
 function draw() {
 	background(128);
-	// image(img,0,0,25,15);
-	stroke(0,255,0);drawRoadLines();
-	stroke(0,0,0);drawGrid(100);
-	// console.log(getRoadLength(1));
+	image(img,0,0,25,15);
+	stroke(0,255,0);
+	drawRoadLines();
+	stroke(0,0,0);
+	drawGrid(100);
 }
 
-function drawGrid(gridDivision){
-	for(var i = 0; i < width; i+= gridDivision){
-		line(i,0,i,height);
-	}
-	for(var i = 0; i < height; i+= gridDivision){
-		line(0,i,width,i);
-	}
+function addCar(placeOnRoad,posOnRoad){ //not done
+	append(cars,[]);
+	cars
 }
 
-// function mousePressed(){
-	// console.log("X:");console.log(mouseX);
-	// console.log("Y:");console.log(mouseY);
-// }
-
-function quickRoad(x1,y1,x2,y2){
-	// allows for you to create a straight road without needing to add ctrl (curve) pts.
-	addRoad(x1,y1,x1,y1,x2,y2,x2,y2);
-}
-
-function addRoad(x1,y1,x2,y2,x3,y3,x4,y4){
-	roads[addRoadVar] = [];
-	roads[addRoadVar][0] = x1;  //endpts
-	roads[addRoadVar][1] = y1;
-	roads[addRoadVar][2] = x2;  //ctrl pts
-	roads[addRoadVar][3] = y2;
-	roads[addRoadVar][4] = x3;  //ctrl pts
-	roads[addRoadVar][5] = y3;
-	roads[addRoadVar][6] = x4;  //endpts
-	roads[addRoadVar][7] = y4;
-	roads[addRoadVar][8] = 0;   //num of connected roads
-	roads[addRoadVar][9] = [];  //connected roads
-	roads[addRoadVar][10] = getRoadLength(addRoadVar); //length of road
-	addRoadVar++;
-}
-
-function connectRoads(roadA,roadB,verbose){
-	//check to see if roads intersect
-	verbose = verbose || false;
-	if(roads[roadA][6]===roads[roadB][0] && roads[roadA][7]===roads[roadB][1]) //is the end of roadA equal to the starto f roadB
-	{
-		roads[roadA][9][roads[roadA][8]] = roadB;
-		roads[roadA][8]++;
-		roads[roadB][9][roads[roadB][8]] = roadA;
-		roads[roadB][8]++;
-		return true;
-	} else if (verbose) {
-		if
-		(
-			roads[roadA][0]===roads[roadB][0]||
-		   roads[roadA][0]===roads[roadB][6]||
-		   roads[roadA][6]===roads[roadB][0]||
-		   roads[roadA][6]===roads[roadB][6]&&
-		   roads[roadA][1]===roads[roadB][1]||
-		   roads[roadA][1]===roads[roadB][7]||
-		   roads[roadA][7]===roads[roadB][1]||
-		   roads[roadA][7]===roads[roadB][7]
-		)
-		{
-			if(roadA===roadB){
-				console.log("connectRoads: The Roads Are the same");
-				console.log(roadA);
-			} else {
-				console.log("connectRoads: The Roads (see next line) are not oriented correctly");
-				console.log(roadA);
-				console.log(roadB);
-			}
-		} else  {
-			console.log("connectRoads: The Roads (see next line) share no common endpoints");
-			console.log(roadA);
-			console.log(roadB);
-		}
-		
-		return false;
-	}
-}
-
-function autoConnectRoads(){
-	for(var i = 0; i < addRoadVar; i++){
-		for(var j = 0; j < addRoadVar; j++){
-			connectRoads(i,j,false);
-		}
-	}
-}
-
-function drawRoadLines(){
-	push();
-	noFill();
-	for(var drawRoadNumber = 0; drawRoadNumber < addRoadVar; drawRoadNumber++){
-		var x1 = roads[drawRoadNumber][0];
-		var y1 = roads[drawRoadNumber][1];
-		var x2 = roads[drawRoadNumber][2];
-		var y2 = roads[drawRoadNumber][3];
-		var x3 = roads[drawRoadNumber][4];
-		var y3 = roads[drawRoadNumber][5];
-		var x4 = roads[drawRoadNumber][6];
-		var y4 = roads[drawRoadNumber][7];
-		bezier(x1,y1,x2,y2,x3,y3,x4,y4);
-	}
-	pop();
-}
 /*function getRoadLength(roadX){
 	var x1 = roads[roadX][0];
 	var y1 = roads[roadX][1];
@@ -155,22 +57,3 @@ function drawRoadLines(){
 	}
 	return totalXYvalue;
 }*/
-
-function getRoadLength(roadX){
-	var detail = 10;
-	var previousXValue = roads[roadX][0];
-	var previousYValue = roads[roadX][1];
-	var totalXYvalue = 0;
-	for(var k = 0; k <= detail; k++){
-		var Xchange = abs(previousXValue-bezierPoint(roads[roadX][0],roads[roadX][2],roads[roadX][4],roads[roadX][6],k/detail));
-		previousXValue = bezierPoint(roads[roadX][0],roads[roadX][2],roads[roadX][4],roads[roadX][6],k/detail);
-		var Ychange = abs(previousYValue-bezierPoint(roads[roadX][1],roads[roadX][3],roads[roadX][5],roads[roadX][7],k/detail));
-		previousYValue = bezierPoint(roads[roadX][1],roads[roadX][3],roads[roadX][5],roads[roadX][7],k/detail);
-	   totalXYvalue += sqrt(Xchange*Xchange+Ychange*Ychange);
-	}
-	return totalXYvalue;
-}
-
-function getPointOnRoad(roadX,time){
-	return createVector(bezierPoint(roads[roadX][0],roads[roadX][2],roads[roadX][4],roads[roadX][6],time),bezierPoint(roads[roadX][1],roads[roadX][3],roads[roadX][5],roads[roadX][7],time));
-}
