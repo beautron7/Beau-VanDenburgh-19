@@ -23,7 +23,7 @@ function setup() {
   console.log(cube(10));
   
   //5
-  console.log(isEven(21)); //it compiles and it works. yes i double checked.
+  console.log(isEven(10)); //it compiles and it works. yes i double checked.
   createCanvas(400,400);
 }
 

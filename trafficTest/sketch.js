@@ -14,6 +14,7 @@ function setup() {
 	quickRoad(310,120,310,80);
 	quickRoad(310,120,280,90);
 	autoConnectRoads();
+	console.log(getRoadLength(1));
 }
 
 function draw() {
@@ -123,7 +124,7 @@ function drawRoadLines(){
 	}
 	pop();
 }
-function getRoadLength(roadX){
+/*function getRoadLength(roadX){
 	var x1 = roads[roadX][0];
 	var y1 = roads[roadX][1];
 	var x2 = roads[roadX][2];
@@ -135,16 +136,30 @@ function getRoadLength(roadX){
 	var detail = 10;
 	var previousXValue = x1;
 	var previousYValue = y1;
-	var totalXvalue = 0;
-	var totalYvalue = 0;
+	var totalXYvalue = 0;
 	for(var k = 0; k <= detail; k++){
-		totalXvalue += abs(previousXValue-bezierPoint(x1,x2,x3,x4,k/detail));
+		var Xchange = abs(previousXValue-bezierPoint(x1,x2,x3,x4,k/detail));
 		previousXValue = bezierPoint(x1,x2,x3,x4,k/detail);
-		totalYvalue += abs(previousYValue-bezierPoint(y1,y2,y3,y4,k/detail));
+		var Ychange = abs(previousYValue-bezierPoint(y1,y2,y3,y4,k/detail));
 		previousYValue = bezierPoint(y1,y2,y3,y4,k/detail);
-		// ellipse(previousXValue,previousYValue,10);
+	   totalXYvalue += sqrt(Xchange*Xchange+Ychange*Ychange);
 	}
-	return sqrt(totalYvalue*totalYvalue+totalXvalue*totalXvalue);
+	return totalXYvalue;
+}*/
+
+function getRoadLength(roadX){
+	var detail = 10;
+	var previousXValue = roads[roadX][0];
+	var previousYValue = roads[roadX][1];
+	var totalXYvalue = 0;
+	for(var k = 0; k <= detail; k++){
+		var Xchange = abs(previousXValue-bezierPoint(roads[roadX][0],roads[roadX][2],roads[roadX][4],roads[roadX][6],k/detail));
+		previousXValue = bezierPoint(roads[roadX][0],roads[roadX][2],roads[roadX][4],roads[roadX][6],k/detail);
+		var Ychange = abs(previousYValue-bezierPoint(roads[roadX][1],roads[roadX][3],roads[roadX][5],roads[roadX][7],k/detail));
+		previousYValue = bezierPoint(roads[roadX][1],roads[roadX][3],roads[roadX][5],roads[roadX][7],k/detail);
+	   totalXYvalue += sqrt(Xchange*Xchange+Ychange*Ychange);
+	}
+	return totalXYvalue;
 }
 
 function getPointOnRoad(roadX,time){
