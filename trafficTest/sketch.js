@@ -1,5 +1,13 @@
+//image of car used: http://opengameart.org/content/red-car-top-down
+//all other declared functions (within the scope of this program) are my own
+
 var roads = []; 
+var cars = [];
 var addRoadVar = 0;
+
+function preload() {
+  img = loadImage("assets/layer1.png");
+}
 
 function setup() {
 	createCanvas(600,700);
@@ -19,6 +27,7 @@ function setup() {
 
 function draw() {
 	background(128);
+	// image(img,0,0,25,15);
 	stroke(0,255,0);drawRoadLines();
 	stroke(0,0,0);drawGrid(100);
 	// console.log(getRoadLength(1));
