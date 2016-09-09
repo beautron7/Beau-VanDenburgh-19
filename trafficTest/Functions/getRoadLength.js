@@ -9,6 +9,7 @@ function getRoadLength(roadX){
 		var Ychange = abs(previousYValue-bezierPoint(roads[roadX][1],roads[roadX][3],roads[roadX][5],roads[roadX][7],k/detail));
 		previousYValue = bezierPoint(roads[roadX][1],roads[roadX][3],roads[roadX][5],roads[roadX][7],k/detail);
 	   totalXYvalue += sqrt(Xchange*Xchange+Ychange*Ychange);
+	   ellipse(previousXValue,previousYValue,10);
 	}
 	return totalXYvalue;
 } //dependant on roads[], p5

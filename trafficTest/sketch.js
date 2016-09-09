@@ -1,6 +1,7 @@
 //image of car used: http://opengameart.org/content/red-car-top-down
 //all other declared functions (within the scope of this program) are my own
 
+
 function preload() {
   carImage = loadImage("assets/layer1.png");
 }
@@ -16,24 +17,57 @@ function setup() {
 	quickRoad(290,120,290,180);
 	quickRoad(310,180,310,120); //6
 	quickRoad(310,120,310,80);
-	quickRoad(310,120,280,90);
+	quickRoad(310,120,280,90); //8
+	addRoad(10,10,50,60,50,60,70,180)
 	autoConnectRoads();
 	console.log(getRoadLength(1));
+	addCar(9,0.5);
 }
 
 function draw() {
 	background(128);
-	image(img,0,0,25,15);
+	image(carImage,0,0,25,15);
 	stroke(0,255,0);
 	drawRoadLines();
 	stroke(0,0,0);
 	drawGrid(100);
+	renderCars();
+	cars[0][1]=frameCount/100;
+	getRoadLength(1);
 }
 
-function addCar(placeOnRoad,posOnRoad){ //not done
-	append(cars,[]);
-	cars
+function addCar(currentRoad,posOnRoad){ //not done
+	cars[addCarVar]=[];
+	cars[addCarVar][0]=currentRoad;
+	cars[addCarVar][1]=posOnRoad;
+	cars[addCarVar][2]; //the rotation
+	addCarVar++;
 }
+
+// var name = new intersection([1,0,3],);
+var intersection = function(inletRoads){
+	// this.logRoads = function(){
+}
+
+function renderCars(){
+	for(var i = 0; i < addCarVar; i++){
+		
+		push();
+		var carXY = getPointOnRoad(cars[i][0],cars[i][1]); //its a vector
+		var Rotation = getRoadRotation(cars[i][0],cars[i][1])
+		translate(carXY.x,carXY.y); //sets origin to the cars position because the origin is also the pt of rotation
+		rotate(Rotation); //sets cars rotation to a moving number
+		image(carImage,-12,-7,25,15); //sets car
+		pop();
+	}
+}
+
+function getRoadRotation(road,pos){
+	var currentCarVector = getPointOnRoad(road,pos);
+	var vectorToAimAt = getPointOnRoad(road,pos+0.1)
+	return atan((currentCarVector.y - vectorToAimAt.y)/(currentCarVector.x - vectorToAimAt.x))
+}
+
 
 /*function getRoadLength(roadX){
 	var x1 = roads[roadX][0];
