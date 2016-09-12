@@ -2,11 +2,10 @@
 //all other declared functions (within the scope of this program) are my own
 
 
-function preload() {
-  carImage = loadImage("assets/layer1.png");
-}
+
 
 function setup() {
+	prel0ad();
 	createCanvas(600,700);
 	frameRate(10);
 	quickRoad(280,90,120,90); //0
@@ -21,12 +20,12 @@ function setup() {
 	addRoad(10,10,50,60,50,60,70,180)
 	autoConnectRoads();
 	console.log(getRoadLength(1));
-	addCar(9,0.5);
+	addCar(1,0.5);
 }
 
 function draw() {
 	background(128);
-	image(carImage,0,0,25,15);
+	
 	stroke(0,255,0);
 	drawRoadLines();
 	stroke(0,0,0);
@@ -48,26 +47,6 @@ function addCar(currentRoad,posOnRoad){ //not done
 var intersection = function(inletRoads){
 	// this.logRoads = function(){
 }
-
-function renderCars(){
-	for(var i = 0; i < addCarVar; i++){
-		
-		push();
-		var carXY = getPointOnRoad(cars[i][0],cars[i][1]); //its a vector
-		var Rotation = getRoadRotation(cars[i][0],cars[i][1])
-		translate(carXY.x,carXY.y); //sets origin to the cars position because the origin is also the pt of rotation
-		rotate(Rotation); //sets cars rotation to a moving number
-		image(carImage,-12,-7,25,15); //sets car
-		pop();
-	}
-}
-
-function getRoadRotation(road,pos){
-	var currentCarVector = getPointOnRoad(road,pos);
-	var vectorToAimAt = getPointOnRoad(road,pos+0.1)
-	return atan((currentCarVector.y - vectorToAimAt.y)/(currentCarVector.x - vectorToAimAt.x))
-}
-
 
 /*function getRoadLength(roadX){
 	var x1 = roads[roadX][0];
