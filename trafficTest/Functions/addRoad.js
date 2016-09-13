@@ -10,7 +10,11 @@ function addRoad(x1,y1,x2,y2,x3,y3,x4,y4){
 	roads[addRoadVar][7] = y4;
 	roads[addRoadVar][8] = 0;   //num of connected roads
 	roads[addRoadVar][9] = [];  //connected roads
+		roads[addRoadVar][12] = 10; //roadDetail
 	roads[addRoadVar][10] = getRoadLength(addRoadVar); //length of road
+	roads[addRoadVar][11] = []; //segment lengthOfSegments
+
+	getSegmentLength(addRoadVar);
 	addRoadVar++;
 }
 //dependant on roads[], addRoadVar, getRoadLength

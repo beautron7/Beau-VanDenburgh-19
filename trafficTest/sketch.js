@@ -3,7 +3,7 @@
 
 
 function preload() {
-  carImage = loadImage("assets/layer1.png");
+  // carImage = loadImage("assets/layer1.png");
 }
 
 function setup() {
@@ -26,7 +26,7 @@ function setup() {
 
 function draw() {
 	background(128);
-	image(carImage,0,0,25,15);
+	// image(carImage,0,0,25,15);
 	stroke(0,255,0);
 	drawRoadLines();
 	stroke(0,0,0);
@@ -51,13 +51,14 @@ var intersection = function(inletRoads){
 
 function renderCars(){
 	for(var i = 0; i < addCarVar; i++){
-		
+
 		push();
 		var carXY = getPointOnRoad(cars[i][0],cars[i][1]); //its a vector
 		var Rotation = getRoadRotation(cars[i][0],cars[i][1])
 		translate(carXY.x,carXY.y); //sets origin to the cars position because the origin is also the pt of rotation
 		rotate(Rotation); //sets cars rotation to a moving number
-		image(carImage,-12,-7,25,15); //sets car
+		// image(carImage,-12,-7,25,15); //sets car
+    rect(-12,-7,25,15)
 		pop();
 	}
 }
