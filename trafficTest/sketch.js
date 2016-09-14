@@ -20,25 +20,21 @@ function setup() {
 	quickRoad(310,120,280,90); //8
 	addRoad(10,10,50,60,50,60,70,180);
 	autoConnectRoads();
-	console.log(getRoadLength(1));
-	console.log(roads[9][11]);
+	addCar(9,0.5);
 	addCar(9,0.5);
 }
 
-function convertActualRoadDistanceToT(roadX,distance){
+function convertActualRoadDistanceToT(roadX,distance){ //mostly functional
 		var distanceCounter = 0; //roads[roadX][11][0]; //counts the actual base distance to add
 		var current_bez_segment = 0;
 		// console.log(distance/roads[roadX][10]);
 
-		while (distance > distanceCounter){
+		while (distance > distanceCounter+roads[roadX][11][current_bez_segment]){
 			distanceCounter+=roads[roadX][11][current_bez_segment];
 			current_bez_segment++;
 		}
-		distanceCounter-=roads[roadX][11][current_bez_segment];
-		current_bez_segment--;
-		//console.log(distance,distanceCounter)
 		//add the 0-10 distance to the calculation
-		return current_bez_segment/roads[roadX][12]+(distance-distanceCounter)/roads[roadX][11][current_bez_segment];
+		return (current_bez_segment/roads[roadX][12])+(distance-distanceCounter)/roads[roadX][11][current_bez_segment]/roads[roadX][12]; //double check
 }
 
 function getCarSpeed(car_id){
@@ -58,9 +54,8 @@ function draw() {
 	renderCars();
 	getRoadLength(9);
 	cars[0][1]=convertActualRoadDistanceToT(9,frameCount/10);
-	if(frameCount%10===0){
-		console.log(getCarSpeed(0));
-	}
+	cars[1][1]=convertActualRoadDistanceToT(9,(frameCount+30)/10);
+	console.log(getCarSpeed(0));
 }
 
 
