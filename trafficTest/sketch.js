@@ -18,10 +18,34 @@ function setup() {
 	quickRoad(310,180,310,120); //6
 	quickRoad(310,120,310,80);
 	quickRoad(310,120,280,90); //8
-	addRoad(10,10,50,60,50,60,70,180)
+	addRoad(10,10,50,60,50,60,70,180);
 	autoConnectRoads();
 	console.log(getRoadLength(1));
+	console.log(roads[9][11]);
 	addCar(9,0.5);
+}
+
+function convertActualRoadDistanceToT(roadX,distance){
+		var distanceCounter = 0; //roads[roadX][11][0]; //counts the actual base distance to add
+		var current_bez_segment = 0;
+		// console.log(distance/roads[roadX][10]);
+
+		while (distance > distanceCounter){
+			distanceCounter+=roads[roadX][11][current_bez_segment];
+			current_bez_segment++;
+		}
+		distanceCounter-=roads[roadX][11][current_bez_segment];
+		current_bez_segment--;
+		//console.log(distance,distanceCounter)
+		//add the 0-10 distance to the calculation
+		return current_bez_segment/roads[roadX][12]+(distance-distanceCounter)/roads[roadX][11][current_bez_segment];
+}
+
+function getCarSpeed(car_id){
+	var newCarPos = getPointOnRoad(cars[car_id][0],cars[car_id][1]);
+	var returnValue = sqrt(abs(newCarPos.x - (cars[car_id][3].x)*abs(newCarPos.x - cars[car_id][3].x))+(abs(newCarPos.y - cars[car_id][3].y)* abs(newCarPos.y - cars[car_id][3].y)))
+	cars[car_id][3]=getPointOnRoad(cars[car_id][0],cars[car_id][1]);
+	return returnValue;
 }
 
 function draw() {
@@ -32,15 +56,26 @@ function draw() {
 	stroke(0,0,0);
 	drawGrid(100);
 	renderCars();
-	cars[0][1]=frameCount/100;
-	getRoadLength(1);
+	getRoadLength(9);
+	cars[0][1]=convertActualRoadDistanceToT(9,frameCount/10);
+	if(frameCount%10===0){
+		console.log(getCarSpeed(0));
+	}
 }
+
+
+
+
+
+
+
 
 function addCar(currentRoad,posOnRoad){ //not done
 	cars[addCarVar]=[];
 	cars[addCarVar][0]=currentRoad;
 	cars[addCarVar][1]=posOnRoad;
 	cars[addCarVar][2]; //the rotation
+	cars[addCarVar][3]=createVector(0,0); //the previous vector for speed
 	addCarVar++;
 }
 
