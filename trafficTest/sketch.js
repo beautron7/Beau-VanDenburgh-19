@@ -20,8 +20,8 @@ function setup() {
 	quickRoad(310,120,280,90); //8
 	addRoad(10,10,50,60,50,60,70,180);
 	autoConnectRoads();
-	addCar(9,0.5);
-	addCar(9,0.5);
+	addCar(1,0.5);
+	addCar(1,0.5);
 }
 
 function convertActualRoadDistanceToT(roadX,distance){ //mostly functional
@@ -53,9 +53,9 @@ function draw() {
 	drawGrid(100);
 	renderCars();
 	getRoadLength(9);
-	cars[0][1]=convertActualRoadDistanceToT(9,frameCount/10);
-	cars[1][1]=convertActualRoadDistanceToT(9,(frameCount+30)/10);
-	console.log(getCarSpeed(0));
+	cars[0][1]=convertActualRoadDistanceToT(1,frameCount/10);
+	cars[1][1]=convertActualRoadDistanceToT(1,(frameCount+30)/10);
+	// console.log(getCarSpeed(0));
 }
 
 

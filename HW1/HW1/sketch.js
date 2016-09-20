@@ -1,44 +1,20 @@
 function setup() {
-	if([] !== []){
-		console.log("Yeah, Javascript is quirky");
-	}
-	
-	console.log(sumEvenOdd());
-	console.log(myPlants[1].list[1]);
-	superhero.sustainHit(90);
-	superhero.checkHealth();
 }
 
-var myPlants = [
-  { 
-    type: "flowers",
-    list: [
-      "rose",
-      "tulip",
-      "dandelion"
-    ]
-  },
-  {
-    type: "trees",
-    list: [
-      "fir",
-      "pine",
-      "birch"
-    ]
-  }  
-];
+var superheroNames = ["javascript man","[]!=[]","(function(){})();","0.1+0.2 != 0.3", "typeof Nan //number"];
 
-var superhero = {
-	name: "Javascript man",
-	health: 100,
-	enemy: {
+
+function superhero(nameer){
+	this.name: nammeer,
+	this.health: 100,
+	this.enemy: {
 		name: "HTML5",
 		weakness: null
 	},
-	sustainHit: function(inte){
+	this.sustainHit: function(inte){
 		this.health-=inte;
 	},
-	checkHealth: function(){
+	this.checkHealth: function(){
 		if(this.health<20){
 			console.log(this.name+", seek medical attention");
 		}
@@ -83,3 +59,7 @@ function sumEvenOdd(){
 	array.splice(2,8);
 	return array;
 }
+
+
+(function aaaaa() {console.log(typeof null);console.log(null instanceof Object);})();
+//yes, null's type is object but it is not an object. and yes, this executes before setup.
