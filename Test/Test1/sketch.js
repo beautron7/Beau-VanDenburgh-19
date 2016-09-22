@@ -1,6 +1,6 @@
 function setup() {
 	createCanvas(400, 400);
-	didGreeniesWin("Pope John Paul", 10, 101);
+	//didGreeniesWin("Pope John Paul", 10, 101);
 	sumRange(10, 12)
 	colorMode(HSB, 10);
 }
