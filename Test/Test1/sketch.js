@@ -10,6 +10,14 @@ function draw() {
 	checker();
 }
 
+var anObject = {
+	Variable: "hi",
+	function1: function(){
+		console.log(this.Variable);
+		this.Variable+="foo";
+	}
+}
+
 function didGreeniesWin(opponent, newmanScore, opposingScore) {
 	console.log((function() {
 		if (newmanScore > opposingScore) {
