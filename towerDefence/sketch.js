@@ -4,15 +4,26 @@ var towers = [];
 var newRunnerType = "runner.generic";
 
 var Grid = {
-	routeDirs: [], //1 right, 0 left, 2 up, 3 down
-	routeHopsToEnd: [],
-	spawns: [],
-	despawns: [],
+	money: 0,
+	routeHopsToEnd: [], /*
+	this variable (RHTE) is confusing.
+	its a 2d array [gridx][gridy] which has a bunch of
+	values stating the distance from that tile to a despawn.
+	to pathfind, the runners will go to lower numbers,
+	and to generate, despawns are asigned 0, all ajacent
+	unpopulated tiles are asigned one, then the ones ajacent
+	to 1 are asined 2, etc. this is a cheap way to do grid pathfinding IMO
+
+	OK IT HAS A BAD NAME. BUT IF YOU CANT COME UP WITH A BETTER ONE, DONT JUDGE ME
+	at least i didnt name it potato
+	*/
+	spawns: [], //self explanitory
+	despawns: [], //self explanitory
 	borders: {
-		Xcoord: 800,
+		Xcoord: 800, //what are the physical borders (because p5 is dumb and global vars cant use width) :(
 		Ycoord: 600,
 	},
-	addSpawn: function(gridX, gridY) {
+	addSpawn: function(gridX, gridY) { //adds a spawn without using new spawn(); to prevent erroneous code.
 		Grid.spawns[Grid.spawns.length] = {
 			x: gridX,
 			y: gridY,
@@ -20,7 +31,7 @@ var Grid = {
 			Ycoord: gridY * tileSize
 		}
 	},
-	addDespawn: function(gridX, gridY) {
+	addDespawn: function(gridX, gridY) { //see above
 		Grid.despawns[Grid.despawns.length] = {
 			x: gridX,
 			y: gridY,
@@ -29,7 +40,8 @@ var Grid = {
 		}
 	},
 	getRandomSpawnCoords: function() {
-		return createVector(Grid.spawns[floor(random(0, Grid.spawns.length))].x, Grid.spawns[floor(random(0, Grid.spawns.length - 1))].y)
+		var random_spawn_number = floor(random(0,Grid.spawns.length));
+		return createVector(Grid.spawns[random_spawn_number].x, Grid.spawns[random_spawn_number].y)
 	},
 	visualizeSpawns: function() {
 		push();
@@ -90,8 +102,6 @@ var Grid = {
 				modTheseValues[DSvar][0] = this.despawns[DSvar].x;
 				modTheseValues[DSvar][1] = this.despawns[DSvar].y;
 		}
-		console.log(modTheseValues+"foo");
-
 		for (var k = 0; k < this.borders.x * this.borders.y; k++) { //k is the value of hops
 			var newValuesToMod = [];
 			for(var q = 0; q < modTheseValues.length; q++){ //q is the array value of modTheseValues
@@ -166,7 +176,6 @@ var Grid = {
 		this.borders.x = floor(this.borders.Xcoord / tileSize) - 1;
 		this.borders.y = floor(this.borders.Ycoord / tileSize) - 1;
 		for (var i = 0; i <= this.borders.x; i++) {
-			Grid.routeDirs[i] = [];
 			Grid.routeHopsToEnd[i] = [];
 		}
 	},
@@ -193,12 +202,20 @@ var Grid = {
 };
 
 function renderAll() {
-	Grid.visualizeHops();
+	// Grid.visualizeHops();
 	Grid.renderAllTowers();
 	Grid.visualizeSpawns();
 	Grid.visualizeDespawns();
 	Grid.renderAllRunners();
 	Grid.drawGrid();
+	textAlign(RIGHT);
+	push();
+	fill(255,255,255);
+	stroke(0,0,0);
+	rect(Grid.borders.Xcoord-70,0,Grid.borders.Xcoord,15)
+	pop();
+	text("Money: "+Grid.money,Grid.borders.Xcoord,12);
+	Grid.money = frameCount;
 }
 
 function keyPressed() {
@@ -214,6 +231,14 @@ function keyPressed() {
 function runner(construct_type) {
 	var tempGridVector = Grid.getRandomSpawnCoords();
 	this.identity;
+	this.max_health = 100;
+	this.health = this.max_health;
+	this.raw_sustain_hit = function(attack_dmg){
+		this.health-=attack_dmg
+		if(this.health<=0){
+			killRunner(this.identity);
+		}
+	}
 	this.gridX = tempGridVector.x;
 	this.gridY = tempGridVector.y;
 	this.gridXoff = tileSize/2;
@@ -229,30 +254,33 @@ function runner(construct_type) {
 	};
 	this.pointing_at;
 	this.update = function(){
-		if(this.gridXoff==0 || this.gridXoff==tileSize || this.gridYoff==0 || this.gridYoff==tileSize){ //if at correct border + next cell , then change to next cell else nothing, regradless re-evalute
+		if(Grid.routeHopsToEnd[this.gridX][this.gridY]===2048){
+			killRunner(this.identity);
+		}
+		if(this.gridXoff===0 || this.gridXoff==tileSize || this.gridYoff==0 || this.gridYoff==tileSize){ //if at correct border + next cell , then change to next cell else nothing, regradless re-evalute
 		// if(abs(this.gridXoff-tileSize/2)<tileSize){
-			if(this.gridXoff==0){
+			if(this.gridXoff===0){
 				this.set_pointing_at();
 				if(this.pointing_at==1){this.gridX -= 1; this.gridXoff=tileSize-this.speed;} else {this.gridXoff=this.speed;}
 			} else
 
 			if(this.gridXoff==tileSize){
 				this.set_pointing_at();
-				if(this.pointing_at==0){this.gridX += 1; this.gridXoff=this.speed;} else {this.gridXoff=tileSize-this.speed;}
+				if(this.pointing_at===0){this.gridX += 1; this.gridXoff=this.speed;} else {this.gridXoff=tileSize-this.speed;}
 			} else
 
-			if(this.gridYoff==0){
+			if(this.gridYoff===0){
 				this.set_pointing_at();
 				if(this.pointing_at==3){this.gridY -= 1; this.gridYoff=tileSize-this.speed;} else {this.gridYoff=this.speed;}
 			} else
 
 			if(this.gridYoff==tileSize){
 				this.set_pointing_at();
-				if(this.pointing_at==2){this.gridY += 1; this.gridYoff=this.speed;} else {this.gridYoff=tileSize/2-this.speed;}
+				if(this.pointing_at==2){this.gridY += 1; this.gridYoff=this.speed;} else {this.gridYoff=tileSize-this.speed;}
 			}
 			this.set_pointing_at();
 		}	//if not at border, keep heading there
-      if(this.pointing_at == 0){this.gridXoff+=this.speed}
+      if(this.pointing_at === 0){this.gridXoff+=this.speed}
 			else if(this.pointing_at == 1){this.gridXoff-=this.speed}
 			else if(this.pointing_at == 2){this.gridYoff+=this.speed}
 			else if(this.pointing_at == 3){this.gridYoff-=this.speed}
@@ -282,6 +310,9 @@ function runner(construct_type) {
 	}
 }
 function killRunner(runner_id){
+	for(var i = 0; i < runners.length; i++){
+		runners[i].identity=i;
+	}
 	runners.splice(runner_id,1);
 }
 
@@ -308,6 +339,7 @@ function addTower(gridX, gridY, tower_type) {
 		towers = towers.slice(0, -1); //if not valid, then set the value of the array to itself but without the last element
 		return false;
 	}
+
 }
 
 function addRunner(typeofrunner) {
@@ -325,6 +357,7 @@ function updateRunners(){
 function setup() {
 	createCanvas(800, 600);
 	Grid.initialize();
+	frameRate(15);
 	Grid.addSpawn(0, 0);
 	Grid.addSpawn(0, 1);
 	Grid.addSpawn(0, 2);
