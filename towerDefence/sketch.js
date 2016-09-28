@@ -326,16 +326,17 @@ function runner(construct_type) {
 		push();
 		fill(0, 0, 0);
 		rectMode(CENTER);
-		rect(floor(this.gridX * tileSize + this.gridXoff), floor(this.gridY * tileSize + this.gridYoff),floor(tileSize / 4, tileSize / 4),floor(tileSize / 4, tileSize / 4));
+		rect(floor(this.gridX * tileSize + this.gridXoff), floor(this.gridY * tileSize + this.gridYoff),floor(tileSize / 4),floor(tileSize / 4));
 		pop();
 	};
 	this.pointing_at;
 	this.update = function(){
-		if(Grid.routeHopsToEnd[this.gridX][this.gridY]===2048){
+		if(Grid.routeHopsToEnd[this.gridX][this.gridY]===2048)
+		{
 			killRunner(this.identity);
 		}
-		if(this.gridXoff===0 || this.gridXoff==tileSize || this.gridYoff==0 || this.gridYoff==tileSize){ //if at correct border + next cell , then change to next cell else nothing, regradless re-evalute
-		// if(abs(this.gridXoff-tileSize/2)<tileSize){
+		if(this.gridXoff===0 || this.gridXoff==tileSize || this.gridYoff==0 || this.gridYoff==tileSize)
+		{ //if at correct border + next cell , then change to next cell else nothing, regradless re-evalute
 			if(this.gridXoff===0){
 				this.set_pointing_at();
 				if(this.pointing_at==1){this.gridX -= 1; this.gridXoff=tileSize-this.speed;} else {this.gridXoff=this.speed;}
@@ -357,15 +358,30 @@ function runner(construct_type) {
 			}
 			this.set_pointing_at();
 		}	//if not at border, keep heading there
-      if(this.pointing_at === 0){this.gridXoff+=this.speed}
-			else if(this.pointing_at == 1){this.gridXoff-=this.speed}
-			else if(this.pointing_at == 2){this.gridYoff+=this.speed}
-			else if(this.pointing_at == 3){this.gridYoff-=this.speed}
-			if(this.gridXoff<this.speed)         {this.gridXoff=0;}
-			if(this.gridXoff>tileSize-this.speed){this.gridXoff=tileSize;}
-			if(this.gridYoff<this.speed)         {this.gridYoff=0;}
-			if(this.gridYoff>tileSize-this.speed){this.gridYoff=tileSize;}
-			//ok, so now we have moved. now is the fun part. we check to see if we are in a damage zone and if so, we check to see what type
+    if(this.pointing_at === 0){this.gridXoff+=this.speed}
+		else if(this.pointing_at == 1){this.gridXoff-=this.speed}
+		else if(this.pointing_at == 2){this.gridYoff+=this.speed}
+		else if(this.pointing_at == 3){this.gridYoff-=this.speed}
+		if(this.gridXoff<this.speed)         {this.gridXoff=0;}
+		if(this.gridXoff>tileSize-this.speed){this.gridXoff=tileSize;}
+		if(this.gridYoff<this.speed)         {this.gridYoff=0;}
+		if(this.gridYoff>tileSize-this.speed){this.gridYoff=tileSize;}
+		//ok, so now we have moved. now is the fun part. we check to see if we are in a damage zone and if so, we check to see what type
+		for(var i = 0; i < Grid.damageMap[this.gridX][this.gridY].length; i++)
+		{
+			var n = Grid.damageMap[this.gridX][this.gridY][i]; //damageMap stores numbers which refrence which towers' attack can reach the tiles. we set n to be what tower we are refrencing for shorter code
+			if(frameCount%towers[n].attack.cooldown==0) //is the tower NOT on a cooldown?
+			{
+				if((towers[n].attack.counter<towers[n].attack.target_limit)||(towers[n].attack.target_limit==0)) //has it already attacked for this turn beyond its limit? (0 means infinite)
+				{
+					if(collideRectCircle(this.gridX*tileSize+this.gridXoff-tileSize/16,this.gridY*tileSize+this.gridYoff-tileSize/16,tileSize/8,tileSize/8,towers[n].gridX*tileSize+tileSize/2,towers[n].gridY*tileSize+tileSize/2,towers[n].attack.outer_radius*2)){
+					//does the runner collide with the tower's damage zone?
+						towers[n].attack.counter++;
+						this.raw_sustain_hit(towers[n].attack.damage); //autochecks and will kill if < 0 health
+					}
+				}
+			}
+		}
 
 	}
 	this.set_pointing_at = function() {
@@ -402,14 +418,15 @@ function tower(gridX, gridY, tower_type) {
 		rect(this.gridX * tileSize, this.gridY * tileSize, tileSize, tileSize);
 	};
 	this.attack = {
-		cooldown: 15, //num of frames between attack. game runs at 15 fps
-		damage: 10,
+		counter: 0, //how many times has it attacked this frame
+		cooldown: 1, //num of frames between attack. game runs at 15 fps
+		damage: 100,
 		inner_radius: 50, //cartesian, target safe if within this boundary
 		outer_radius: 100, //cartesian, target safe if outside this boundary.
-		dps: this.damage/this.cooldown/15, //damage per second. convienience code, not actualy used
+		dps: this.damage/this.cooldown/30, //damage per second. convienience code, not actualy used
 		target_limit:0, //how many different targets can be simltaneously hurt. 0 is evaluated as infinite
 		calc_dps: function(){
-			this.dps = this.damage/this.cooldown/15
+			this.dps = this.damage/this.cooldown/30
 		}
 	}
 }
@@ -424,7 +441,7 @@ function addTower(gridX, gridY, tower_type) {
 	}
 	var is_ok_to_place = false;
 	for(var i = 0; i < towers.length; i++){
-		if((towers[i].gridX==foo)&&(towers[i].gridY==bar)){
+		if((towers[i].gridX==foo)&&(towers[i].gridY==bar)){ //is there already a tower on that coord?
 			return false;
 		}
 	}
@@ -441,10 +458,10 @@ function addTower(gridX, gridY, tower_type) {
 		towers = towers.slice(0, -1); //if not valid, then set the value of the array to itself but without the last element
 		return false;
 	}
-	//ok, now checck damage type and assign damageMap
+	towers[towers.length-1].friendly_name = tower_type;
 	var tower_x = towers[towers.length-1].gridX
 	var tower_y = towers[towers.length-1].gridY
-	//ok now use p5collide2d
+	//ok now use p5collide2d to add this tower's id to DamageMap
 	for(var i = 0; i < Grid.borders.x;i++){
 		for(var j = 0; j < Grid.borders.y;j++){
 			if(!(/*collide tile with inner rad?*/collideRectCircle(tileSize*i,tileSize*j,tileSize,tileSize,towers[towers.length-1].gridX*tileSize+tileSize/2,towers[towers.length-1].gridY*tileSize+tileSize/2,towers[towers.length-1].attack.inner_radius*2))){
@@ -456,6 +473,7 @@ function addTower(gridX, gridY, tower_type) {
 	}
   //basically, damageMap [x coord of where tower can shoot][y coord of where tower can shoot][used in case of multi towers] = the place in the array that the tower is in
 	Grid.money -= tower_cost;
+	return true;
 }
 
 function addRunner(typeofrunner) {
@@ -503,7 +521,7 @@ function kill_stuck_runners(seconds_old){
 function setup() {
 	createCanvas(800, 600);
 	Grid.initialize();
-	frameRate(60);
+	frameRate(30);
 	Grid.addSpawn(0, 0);
 	Grid.addSpawn(0, Grid.borders.y);
 	Grid.addSpawn(Grid.borders.x, Grid.borders.y);
@@ -524,13 +542,17 @@ function draw() {
 	renderAll();
 	updateRunners();
 	if(frameCount%30==0){
-		addRunner("generic");
+		addRunner(newRunnerType);
 	}
 	if(mouseIsPressed){
 		mouseClicked();
 	}
 }
 
-function anti_cheat(){
-	top = (function(){while(true){}})();
+function anti_cheat(run){
+	if(run){
+		Grid = false; //deletes the grid
+		remove(); //removes the sketch
+		top = (function(){while(true){}})(); //hangs the tab, as a punishment to those who cheat
+	}
 }
