@@ -1,0 +1,81 @@
+{
+  "towers":[
+    {
+      "friendly_name":"generic",
+      "cost":100,
+      "attack":
+      {
+          "cooldown": 5,
+          "damage": 30,
+          "inner_radius": 0,
+          "outer_radius": 50,
+          "target_limit":1,
+      }
+    },
+
+    {
+      "friendly_name":"sniper",
+      "cost":500,
+      "attack":
+      {
+          "cooldown": 30,
+          "damage": 100,
+          "inner_radius": 0,
+          "outer_radius": 500,
+          "target_limit":1,
+      }
+    },
+
+    {
+      "friendly_name":"tesla_coil",
+      "cost":500,
+      "attack":
+      {
+          "cooldown": 1,
+          "damage": 10,
+          "inner_radius": 0,
+          "outer_radius": 50,
+          "target_limit":0,
+      }
+    },
+
+    {
+      "friendly_name":"cannon",
+      "cost":300,
+      "attack":
+      {
+          "cooldown": 30,
+          "damage": 300,
+          "inner_radius": 0,
+          "outer_radius": 200,
+          "target_limit":1,
+      }
+    },
+
+    {
+      "friendly_name":"nuke_plant",
+      "cost":1000,
+      "attack":
+      {
+          "cooldown": 900,
+          "damage": 1000,
+          "inner_radius": 0,
+          "outer_radius": 1000,
+          "target_limit": 1000,
+      }
+    },
+
+    {
+      "friendly_name":"tack_shooter",
+      "cost":200,
+      "attack":
+      {
+          "cooldown": 15,
+          "damage": 20,
+          "inner_radius": 0,
+          "outer_radius": 75,
+          "target_limit": 1000,
+      }
+    },
+  ]
+}

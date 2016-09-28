@@ -5,30 +5,12 @@ var newRunnerType = "generic";
 var disable_warnings = false;
 var allow_cheats = false;
 var flash_money = 0;
-
-var changeTileSize = function(new_tile_size){
-	if(!(disable_warnings)){
-		console.log("It appears that you have called the function changeTileSize. This function is not completley functional and may cause glitches. if you wish to proceed, set disable_warnings to true, and procede with caution.");
-		return false;
-	}
-	var oldTileSize = tileSize;
-	tileSize=new_tile_size;
-	for(var i = 0; i < Grid.despawns.length; i++){
-			Grid.despawns[i].Xcoord=Grid.despawns[i].x*tileSize;
-			Grid.despawns[i].Ycoord=Grid.despawns[i].y*tileSize;
-	}
-	for(var i = 0; i < Grid.spawns.length; i++){
-			Grid.spawns[i].Xcoord=Grid.spawns[i].x*tileSize;
-			Grid.spawns[i].Ycoord=Grid.spawns[i].y*tileSize;
-	} //speed still broken, still leaving in for now...
-	Grid.borders.Ycoord *= tileSize/oldTileSize;
-	Grid.borders.Xcoord *= tileSize/oldTileSize;
-}
+var spawn_quanity = 1;
+var spawn_quanity_accel = 0.003;
 
 var Grid = {
 	money: 1000000, //changed in setup anyways, high number to allow for lots of towers in setup
-	damageMap: [],
-	/*
+	damageMap: [], /*
 	damageMap is a variable which helps match the location of runners to how they die
 	quite simply, it is 2d array of arrays. the X and Y dimensions are the X and y of the grid,
 	and the third demension is just an array of towers which can target that location. when a
@@ -42,8 +24,7 @@ var Grid = {
 
 	* if a tile collides with minrange, it will not be fired at. this is sacraficed due to library limitations.
 	*/
-	routeHopsToEnd: [],
-	/*
+	routeHopsToEnd: [], /*
 	this variable (RHTE) is confusing.
 	its a 2d array [gridx][gridy] which has a bunch of
 	values stating the distance from that tile to a despawn.
@@ -57,7 +38,7 @@ var Grid = {
 	*/
 	spawns: [], //self explanitory
 	despawns: [], //self explanitory
-	borders: {
+	borders: {//the borders of the grid
 		Xcoord: 800, //what are the physical borders (because p5 is dumb and global vars cant use width) :(
 		Ycoord: 600,
 	},
@@ -77,7 +58,7 @@ var Grid = {
 			Ycoord: floor(gridY) * tileSize
 		}
 	},
-	visualizeDamageMap: function(){
+	visualizeDamageMap: function(){ //see note on damageMap variable
 		push()
 		for(var i = 0; i < Grid.borders.x;i++){
 			for(var j = 0; j < Grid.borders.y;j++){
@@ -87,18 +68,18 @@ var Grid = {
 		}
 		pop()
 	},
-	showFps: function() {
+	showFps: function() { //shows the fps
 		push();
 		fill(128,128,255);
 		textAlign(LEFT);
-		text("FPS: "+round(frameRate()),0,10);
+		text("FPS: "+round(frameRate()),(Grid.borders.x+1)*tileSize,height-3);
 		pop();
 	},
-	getRandomSpawnCoords: function() {
+	getRandomSpawnCoords: function() { //returns a fake vector where the x/y is the gridx/y of a spawn pt
 		var random_spawn_number = floor(random(0,Grid.spawns.length));
 		return createVector(Grid.spawns[random_spawn_number].x, Grid.spawns[random_spawn_number].y)
 	},
-	visualizeSpawns: function() {
+	visualizeSpawns: function() { //shows spawns as green
 		push();
 		fill(0, 256, 0);
 		for (var i = 0; i < Grid.spawns.length; i++) {
@@ -106,7 +87,7 @@ var Grid = {
 		}
 		pop();
 	},
-	visualizeDespawns: function() {
+	visualizeDespawns: function() { //shows despawns as red
 		push();
 		fill(256, 0, 0);
 		for (var i = 0; i < Grid.despawns.length; i++) {
@@ -114,39 +95,39 @@ var Grid = {
 		}
 		pop();
 	},
-	renderAllRunners: function() {
+	renderAllRunners: function() { //shows runners as the little dots
 		for (var i = 0; i < runners.length; i++) {
 			runners[i].render();
 		}
 	},
-	renderAllTowers: function() {
+	renderAllTowers: function() { //shows towers as blue
 		for (var i = 0; i < towers.length; i++) {
 			towers[i].render();
 		}
 	},
-	displayMoney: function(){
+	displayMoney: function(){ //shows the money in the top right corner
 		textAlign(RIGHT);
 		push();
 		fill(255,255,255);
 		stroke(0,0,0);
 		if(flash_money>0){
-			if(floor(frameCount/25)%2==0){
+			if(floor(frameCount/8)%2==0){
 				fill(255,0,0);
 			}
 		}
-		rect(Grid.borders.Xcoord-70,0,Grid.borders.Xcoord,15)
+		rect(Grid.borders.Xcoord,0,Grid.borders.Xcoord,15)
 		noStroke();
 		fill(0,0,255);
 		if(flash_money>0){
-			if(floor(frameCount/25)%2==0){
+			if(floor(frameCount/8)%2==0){
 				fill(255);
 			}
 			flash_money--;
 		}
-		text("Money: "+Grid.money,Grid.borders.Xcoord,12);
+		text("Money: "+Grid.money,width,12);
 		pop();
 	},
-	drawGrid: function() {
+	drawGrid: function() { //draws a grid
 		for (var i = 0; i < Grid.borders.Xcoord; i += tileSize) {
 			line(i, 0, i, Grid.borders.Ycoord);
 		}
@@ -154,7 +135,7 @@ var Grid = {
 			line(0, i, Grid.borders.Xcoord, i);
 		}
 	},
-	generateRoute: function(arrayToMod) {
+	generateRoute: function(arrayToMod) {//generates a 2d array with each value being the distance to a despawn
 		// when working, the npc's will try and move to a lower numbered tile. 2048 is so high it *should* never be lower
 		if (!(arrayToMod instanceof Array)) {
 			arrayToMod = [];
@@ -249,7 +230,7 @@ var Grid = {
 			} */
 		return arrayToMod;
 	},
-	initialize: function() {
+	initialize: function() {//makes 1d arrays 2d.
 		this.borders.x = floor(this.borders.Xcoord / tileSize) - 1;
 		this.borders.y = floor(this.borders.Ycoord / tileSize) - 1;
 		for (var i = 0; i <= this.borders.x; i++) {
@@ -260,18 +241,18 @@ var Grid = {
 			}
 		}
 	},
-	visualizeHops: function() {
+	visualizeHops: function() {//used to debug pathfinding
 		push();
 		colorMode(HSB, 256);
 		for (var i = 0; i < Grid.borders.x + 1; i++) {
 			for (var j = 0; j < Grid.borders.y + 1; j++) {
-				fill(this.routeHopsToEnd[i][j] * 5 % 255)
+				fill(this.routeHopsToEnd[i][j] * 20 % 255)
 				rect(i * tileSize + tileSize / 4, j * tileSize + tileSize / 4, tileSize / 2, tileSize / 2);
 			}
 		}
 		pop();
 	},
-	verifyRoute: function(array_to_verify) {
+	verifyRoute: function(array_to_verify) {//used to check to see if the route generated by generateRoute leads to spawns (hint: it does unless you intentionaly block it)
 		var is_valid_route = true;
 		for (var i = 0; i < this.spawns.length; i++) {
 			if (array_to_verify[this.spawns[i].x][this.spawns[i].y] >= 2048) { //basically, if the distance is over 2048, its not vaid, so return false
@@ -281,8 +262,25 @@ var Grid = {
 		return is_valid_route
 	},
 };
-
-function renderAll() {
+function changeTileSize(new_tile_size){//buggy, used to change tile size mid - game.
+	if(!(disable_warnings)){
+		console.log("It appears that you have called the function changeTileSize. This function is not completley functional and may cause glitches. if you wish to proceed, set disable_warnings to true, and procede with caution.");
+		return false;
+	}
+	var oldTileSize = tileSize;
+	tileSize=new_tile_size;
+	for(var i = 0; i < Grid.despawns.length; i++){
+			Grid.despawns[i].Xcoord=Grid.despawns[i].x*tileSize;
+			Grid.despawns[i].Ycoord=Grid.despawns[i].y*tileSize;
+	}
+	for(var i = 0; i < Grid.spawns.length; i++){
+			Grid.spawns[i].Xcoord=Grid.spawns[i].x*tileSize;
+			Grid.spawns[i].Ycoord=Grid.spawns[i].y*tileSize;
+	} //speed still broken, still leaving in for now...
+	Grid.borders.Ycoord *= tileSize/oldTileSize;
+	Grid.borders.Xcoord *= tileSize/oldTileSize;
+}
+function renderAll() { //to keep draw clean, all rendering functions are kept here.
 	background(250);
 	// Grid.visualizeHops(); //pathfinding
 	Grid.renderAllTowers();
@@ -294,7 +292,6 @@ function renderAll() {
 	Grid.displayMoney();
 	Grid.showFps();
 }
-
 function keyPressed() {
 	if (keyCode == 32) {
 		addRunner(newRunnerType);
@@ -304,8 +301,7 @@ function keyPressed() {
 	}
 	console.log("key "+keyCode+" pressed");
 }
-
-function runner(construct_type) {
+function runner(construct_type) { //obj constructor for all runners
 	var tempGridVector = Grid.getRandomSpawnCoords();
 	this.identity; //value in array
 	this.max_health = 100;
@@ -324,7 +320,8 @@ function runner(construct_type) {
 	this.speed = 1;
 	this.render = function() {
 		push();
-		fill(0, 0, 0);
+		fill(lerpColor(color(255,0,0),color(0,255,0),this.health/this.max_health));
+		stroke(0);
 		rectMode(CENTER);
 		rect(floor(this.gridX * tileSize + this.gridXoff), floor(this.gridY * tileSize + this.gridYoff),floor(tileSize / 4),floor(tileSize / 4));
 		pop();
@@ -377,7 +374,17 @@ function runner(construct_type) {
 					if(collideRectCircle(this.gridX*tileSize+this.gridXoff-tileSize/16,this.gridY*tileSize+this.gridYoff-tileSize/16,tileSize/8,tileSize/8,towers[n].gridX*tileSize+tileSize/2,towers[n].gridY*tileSize+tileSize/2,towers[n].attack.outer_radius*2)){
 					//does the runner collide with the tower's damage zone?
 						towers[n].attack.counter++;
+						towers[n].visualize(this.gridX*tileSize+this.gridXoff,this.gridY*tileSize+this.gridYoff,true);
 						this.raw_sustain_hit(towers[n].attack.damage); //autochecks and will kill if < 0 health
+					}
+				}
+			} else {
+				if((towers[n].attack.counter<towers[n].attack.target_limit)||(towers[n].attack.target_limit==0)) //has it already attacked for this turn beyond its limit? (0 means infinite)
+				{
+					if(collideRectCircle(this.gridX*tileSize+this.gridXoff-tileSize/16,this.gridY*tileSize+this.gridYoff-tileSize/16,tileSize/8,tileSize/8,towers[n].gridX*tileSize+tileSize/2,towers[n].gridY*tileSize+tileSize/2,towers[n].attack.outer_radius*2)){
+					//does the runner collide with the tower's damage zone?
+						towers[n].attack.counter++;
+						towers[n].visualize(this.gridX*tileSize+this.gridXoff,this.gridY*tileSize+this.gridYoff,false);
 					}
 				}
 			}
@@ -402,41 +409,52 @@ function runner(construct_type) {
 		if(Grid.routeHopsToEnd[this.gridX][this.gridY]===0){killRunner(this.identity);}
 	}
 }
-function killRunner(runner_id){
+function killRunner(runner_id){ //deletes a runner from runners[]. aka the runner has died.
 	runners.splice(runner_id,1);
 	for(var i = 0; i < runners.length; i++){
 		runners[i].identity=i;
 	}
 }
-
-function tower(gridX, gridY, tower_type) {
+function tower(gridX, gridY, tower_type) {//obj constructor for all towers
 	this.gridX = gridX;
 	this.gridY = gridY;
 	this.damage_type = tower_type;
 	this.render = function() {
 		fill(0, 0, 255);
 		rect(this.gridX * tileSize, this.gridY * tileSize, tileSize, tileSize);
+		this.attack.counter = 0;
 	};
 	this.attack = {
 		counter: 0, //how many times has it attacked this frame
-		cooldown: 1, //num of frames between attack. game runs at 15 fps
-		damage: 100,
-		inner_radius: 50, //cartesian, target safe if within this boundary
-		outer_radius: 100, //cartesian, target safe if outside this boundary.
+		cooldown: 5, //num of frames between attack. game runs at 15 fps
+		damage: 30,
+		inner_radius: 0, //cartesian, target safe if within this boundary
+		outer_radius: 50, //cartesian, target safe if outside this boundary.
 		dps: this.damage/this.cooldown/30, //damage per second. convienience code, not actualy used
-		target_limit:0, //how many different targets can be simltaneously hurt. 0 is evaluated as infinite
+		target_limit:1, //how many different targets can be simltaneously hurt. 0 is evaluated as infinite
 		calc_dps: function(){
 			this.dps = this.damage/this.cooldown/30
 		}
 	}
+	this.visualize = function(runner_x,runner_y,attack){
+		push();
+		fill(255,0,0,255);
+		stroke(255,0,0,255);
+		strokeWeight(1);
+		if(attack){rect(floor(this.gridX*tileSize+tileSize/4),floor(this.gridY*tileSize+tileSize/4),floor(tileSize/2),floor(tileSize/2));}
+		line(runner_x,runner_y,this.gridX*tileSize+tileSize/2,this.gridY*tileSize+tileSize/2);
+		pop();
+	}
 }
-
-function addTower(gridX, gridY, tower_type) {
+function addTower(gridX, gridY, tower_type) {//proper way to add a tower
 	var foo = gridX;
 	var bar = gridY;
 	var tower_cost = 75;
+	if ((gridX > Grid.borders.x) || (gridX < 0) || (gridY > Grid.borders.y) || (gridY < 0)) {
+		return false; //is it a point on the grid
+	}
 	if(Grid.money < tower_cost){
-		flash_money = 100;
+		flash_money = 50;
 		return false;
 	}
 	var is_ok_to_place = false;
@@ -444,9 +462,6 @@ function addTower(gridX, gridY, tower_type) {
 		if((towers[i].gridX==foo)&&(towers[i].gridY==bar)){ //is there already a tower on that coord?
 			return false;
 		}
-	}
-	if ((gridX > Grid.borders.x) || (gridX < 0) || (gridY > Grid.borders.y) || (gridY < 0)) {
-	 	return false; //is it a point on the grid
 	}
 	towers[towers.length] = new tower(gridX, gridY, tower_type);
 	var hypothetical_route;
@@ -475,37 +490,34 @@ function addTower(gridX, gridY, tower_type) {
 	Grid.money -= tower_cost;
 	return true;
 }
-
-function addRunner(typeofrunner) {
+function addRunner(typeofrunner) {//proper way to add a runner
 	var run_length = runners.length-1;
 	runners[runners.length] = new runner(typeofrunner);
 	runners[runners.length-1].identity = runners.length-1;
 	runners[runners.length-1].birthday = frameCount;
 	runners[runners.length-1].set_pointing_at();
 	if(typeofrunner==="generic"){
-		runners[runners.length-1].speed = 0.75;
+		runners[runners.length-1].speed = 2;
 		runners[runners.length-1].max_health = 100;
 		runners[runners.length-1].health = 100;
 	}
 	if(typeofrunner==="heavy"){
-		runners[runners.length-1].speed = 0.25;
+		runners[runners.length-1].speed = 1;
 		runners[runners.length-1].max_health = 200;
 		runners[runners.length-1].health = 200;
 	}
 	if(typeofrunner==="scout"){
-		runners[runners.length-1].speed = 2;
+		runners[runners.length-1].speed = 4;
 		runners[runners.length-1].max_health = 35;
 		runners[runners.length-1].health = 35;
 	}
 }
-
-function updateRunners(){
+function updateRunners(){//to keep draw clean
 	for(var i = 0; i < runners.length; i++){
 		runners[i].update();
 	}
 }
-
-function kill_stuck_runners(seconds_old){
+function kill_stuck_runners(seconds_old){//brokenish; occasionally, runners would try and go to the edge and stay there. I had anothername but it sounds wrong.
 	for(var i = 0; i < runners.length; i++){
 		if(frameCount - runners[i].birthday > seconds_old * 60){
 			killRunner(i);
@@ -517,39 +529,42 @@ function kill_stuck_runners(seconds_old){
 		}
 	}
 }
-
-function setup() {
-	createCanvas(800, 600);
+function setup() {//p5
+	createCanvas(950, 600);
 	Grid.initialize();
-	frameRate(30);
-	Grid.addSpawn(0, 0);
-	Grid.addSpawn(0, Grid.borders.y);
-	Grid.addSpawn(Grid.borders.x, Grid.borders.y);
-	Grid.addSpawn(Grid.borders.x, 0);
-	Grid.addDespawn(Grid.borders.x/2,Grid.borders.y/2);
-	addTower(5, 5, "barrier");
-	addRunner(1, 1, "default");
-	// Grid.generateRoute(Grid.routeHopsToEnd);
+	frameRate(15);
+	for(var o = 0; o < 4; o++){
+			Grid.addSpawn(0, o);
+			Grid.addSpawn(1, o);
+			Grid.addSpawn(2, o);
+			Grid.addSpawn(3, o);
+			Grid.addDespawn(0, Grid.borders.y-o);
+			Grid.addDespawn(1, Grid.borders.y-o);
+			Grid.addDespawn(2, Grid.borders.y-o);
+			Grid.addDespawn(3, Grid.borders.y-o);
+	}
+
+	Grid.generateRoute(Grid.routeHopsToEnd);
 	Grid.money = 0;
 }
-
-function mouseClicked() {
+function mouseClicked() {//p5
 	addTower(floor(mouseX / tileSize), floor(mouseY / tileSize), "generic");
 }
-
-function draw() {
+function draw() {//p5
 	allow_cheats = false;
 	renderAll();
 	updateRunners();
 	if(frameCount%30==0){
-		addRunner(newRunnerType);
+		for(var i = 0; i < floor(spawn_quanity); i++){
+			addRunner(newRunnerType);
+		}
 	}
+	spawn_quanity+=spawn_quanity_accel;
 	if(mouseIsPressed){
 		mouseClicked();
 	}
 }
-
-function anti_cheat(run){
+function anti_cheat(run){//breaks the game. not in use right now
 	if(run){
 		Grid = false; //deletes the grid
 		remove(); //removes the sketch
