@@ -1,11 +1,49 @@
 var tileSize = 25;
 var runners = [];
 var towers = [];
-var newRunnerType = "runner.generic";
+var newRunnerType = "generic";
+var disable_warnings = false;
+var allow_cheats = false;
+var flash_money = 0;
+
+var changeTileSize = function(new_tile_size){
+	if(!(disable_warnings)){
+		console.log("It appears that you have called the function changeTileSize. This function is not completley functional and may cause glitches. if you wish to proceed, set disable_warnings to true, and procede with caution.");
+		return false;
+	}
+	var oldTileSize = tileSize;
+	tileSize=new_tile_size;
+	for(var i = 0; i < Grid.despawns.length; i++){
+			Grid.despawns[i].Xcoord=Grid.despawns[i].x*tileSize;
+			Grid.despawns[i].Ycoord=Grid.despawns[i].y*tileSize;
+	}
+	for(var i = 0; i < Grid.spawns.length; i++){
+			Grid.spawns[i].Xcoord=Grid.spawns[i].x*tileSize;
+			Grid.spawns[i].Ycoord=Grid.spawns[i].y*tileSize;
+	} //speed still broken, still leaving in for now...
+	Grid.borders.Ycoord *= tileSize/oldTileSize;
+	Grid.borders.Xcoord *= tileSize/oldTileSize;
+}
 
 var Grid = {
-	money: 0,
-	routeHopsToEnd: [], /*
+	money: 1000000, //changed in setup anyways, high number to allow for lots of towers in setup
+	damageMap: [],
+	/*
+	damageMap is a variable which helps match the location of runners to how they die
+	quite simply, it is 2d array of arrays. the X and Y dimensions are the X and y of the grid,
+	and the third demension is just an array of towers which can target that location. when a
+	tower is made, it checks to see what tiles it collides with on the grid, and if
+	it can shoot a tile*, it will add it's val in the array to the damageMap on that tiles x and y value
+	therefore, a runner can check the damageMap for the tile it is on, and get a list of
+	towers that could shoot at it. then the runner checks to see if it is within range of those towers
+	, sees if they have shot anything before and what their target limit is, and then changes it's healh.
+	this prevents runners from checking each and every tower, and tower's from checking each and every runner,
+	saving valuable prossessor time
+
+	* if a tile collides with minrange, it will not be fired at. this is sacraficed due to library limitations.
+	*/
+	routeHopsToEnd: [],
+	/*
 	this variable (RHTE) is confusing.
 	its a 2d array [gridx][gridy] which has a bunch of
 	values stating the distance from that tile to a despawn.
@@ -25,19 +63,36 @@ var Grid = {
 	},
 	addSpawn: function(gridX, gridY) { //adds a spawn without using new spawn(); to prevent erroneous code.
 		Grid.spawns[Grid.spawns.length] = {
-			x: gridX,
-			y: gridY,
-			Xcoord: gridX * tileSize,
-			Ycoord: gridY * tileSize
+			x: floor(gridX),
+			y: floor(gridY),
+			Xcoord: floor(gridX) * tileSize,
+			Ycoord: floor(gridY) * tileSize
 		}
 	},
 	addDespawn: function(gridX, gridY) { //see above
 		Grid.despawns[Grid.despawns.length] = {
-			x: gridX,
-			y: gridY,
-			Xcoord: gridX * tileSize,
-			Ycoord: gridY * tileSize
+			x: floor(gridX),
+			y: floor(gridY),
+			Xcoord: floor(gridX) * tileSize,
+			Ycoord: floor(gridY) * tileSize
 		}
+	},
+	visualizeDamageMap: function(){
+		push()
+		for(var i = 0; i < Grid.borders.x;i++){
+			for(var j = 0; j < Grid.borders.y;j++){
+				fill(0,0,0,Grid.damageMap[i][j].length*30)
+				rect(tileSize*i,tileSize*j,tileSize,tileSize);
+			}
+		}
+		pop()
+	},
+	showFps: function() {
+		push();
+		fill(128,128,255);
+		textAlign(LEFT);
+		text("FPS: "+round(frameRate()),0,10);
+		pop();
 	},
 	getRandomSpawnCoords: function() {
 		var random_spawn_number = floor(random(0,Grid.spawns.length));
@@ -68,6 +123,28 @@ var Grid = {
 		for (var i = 0; i < towers.length; i++) {
 			towers[i].render();
 		}
+	},
+	displayMoney: function(){
+		textAlign(RIGHT);
+		push();
+		fill(255,255,255);
+		stroke(0,0,0);
+		if(flash_money>0){
+			if(floor(frameCount/25)%2==0){
+				fill(255,0,0);
+			}
+		}
+		rect(Grid.borders.Xcoord-70,0,Grid.borders.Xcoord,15)
+		noStroke();
+		fill(0,0,255);
+		if(flash_money>0){
+			if(floor(frameCount/25)%2==0){
+				fill(255);
+			}
+			flash_money--;
+		}
+		text("Money: "+Grid.money,Grid.borders.Xcoord,12);
+		pop();
 	},
 	drawGrid: function() {
 		for (var i = 0; i < Grid.borders.Xcoord; i += tileSize) {
@@ -177,6 +254,10 @@ var Grid = {
 		this.borders.y = floor(this.borders.Ycoord / tileSize) - 1;
 		for (var i = 0; i <= this.borders.x; i++) {
 			Grid.routeHopsToEnd[i] = [];
+			Grid.damageMap[i] = [];
+			for (var j = 0; j <= this.borders.y; j++){
+				Grid.damageMap[i][j]=[];
+			}
 		}
 	},
 	visualizeHops: function() {
@@ -202,20 +283,16 @@ var Grid = {
 };
 
 function renderAll() {
-	// Grid.visualizeHops();
+	background(250);
+	// Grid.visualizeHops(); //pathfinding
 	Grid.renderAllTowers();
 	Grid.visualizeSpawns();
 	Grid.visualizeDespawns();
 	Grid.renderAllRunners();
+	// Grid.visualizeDamageMap(); //damageMap
 	Grid.drawGrid();
-	textAlign(RIGHT);
-	push();
-	fill(255,255,255);
-	stroke(0,0,0);
-	rect(Grid.borders.Xcoord-70,0,Grid.borders.Xcoord,15)
-	pop();
-	text("Money: "+Grid.money,Grid.borders.Xcoord,12);
-	Grid.money = frameCount;
+	Grid.displayMoney();
+	Grid.showFps();
 }
 
 function keyPressed() {
@@ -225,12 +302,12 @@ function keyPressed() {
 	if (keyCode === 80) {
 		newRunnerType = prompt("newRunnerType=");
 	}
-	console.log(keyCode);
+	console.log("key "+keyCode+" pressed");
 }
 
 function runner(construct_type) {
 	var tempGridVector = Grid.getRandomSpawnCoords();
-	this.identity;
+	this.identity; //value in array
 	this.max_health = 100;
 	this.health = this.max_health;
 	this.raw_sustain_hit = function(attack_dmg){
@@ -243,13 +320,13 @@ function runner(construct_type) {
 	this.gridY = tempGridVector.y;
 	this.gridXoff = tileSize/2;
 	this.gridYoff = tileSize/2;
-	this.type = construct_type;
+	this.friendly_name = construct_type; //friendly name
 	this.speed = 1;
 	this.render = function() {
 		push();
 		fill(0, 0, 0);
 		rectMode(CENTER);
-		rect(this.gridX * tileSize + this.gridXoff, this.gridY * tileSize + this.gridYoff, tileSize / 4, tileSize / 4);
+		rect(floor(this.gridX * tileSize + this.gridXoff), floor(this.gridY * tileSize + this.gridYoff),floor(tileSize / 4, tileSize / 4),floor(tileSize / 4, tileSize / 4));
 		pop();
 	};
 	this.pointing_at;
@@ -288,7 +365,8 @@ function runner(construct_type) {
 			if(this.gridXoff>tileSize-this.speed){this.gridXoff=tileSize;}
 			if(this.gridYoff<this.speed)         {this.gridYoff=0;}
 			if(this.gridYoff>tileSize-this.speed){this.gridYoff=tileSize;}
-			//if we heading down
+			//ok, so now we have moved. now is the fun part. we check to see if we are in a damage zone and if so, we check to see what type
+
 	}
 	this.set_pointing_at = function() {
 		var arr = [];
@@ -306,46 +384,101 @@ function runner(construct_type) {
 		} else {arr.push(2048);}
 		this.pointing_at = arr.indexOf(min(arr));
 		if(Grid.routeHopsToEnd[this.gridX][this.gridY]===0){killRunner(this.identity);}
-		console.log(min(arr));
 	}
 }
 function killRunner(runner_id){
+	runners.splice(runner_id,1);
 	for(var i = 0; i < runners.length; i++){
 		runners[i].identity=i;
 	}
-	runners.splice(runner_id,1);
 }
 
 function tower(gridX, gridY, tower_type) {
 	this.gridX = gridX;
 	this.gridY = gridY;
+	this.damage_type = tower_type;
 	this.render = function() {
 		fill(0, 0, 255);
 		rect(this.gridX * tileSize, this.gridY * tileSize, tileSize, tileSize);
 	};
+	this.attack = {
+		cooldown: 15, //num of frames between attack. game runs at 15 fps
+		damage: 10,
+		inner_radius: 50, //cartesian, target safe if within this boundary
+		outer_radius: 100, //cartesian, target safe if outside this boundary.
+		dps: this.damage/this.cooldown/15, //damage per second. convienience code, not actualy used
+		target_limit:0, //how many different targets can be simltaneously hurt. 0 is evaluated as infinite
+		calc_dps: function(){
+			this.dps = this.damage/this.cooldown/15
+		}
+	}
 }
 
 function addTower(gridX, gridY, tower_type) {
-	if ((gridX > Grid.borders.x) || (gridX < 0) || (gridY > Grid.borders.y) || (gridY < 0)) {
+	var foo = gridX;
+	var bar = gridY;
+	var tower_cost = 75;
+	if(Grid.money < tower_cost){
+		flash_money = 100;
 		return false;
+	}
+	var is_ok_to_place = false;
+	for(var i = 0; i < towers.length; i++){
+		if((towers[i].gridX==foo)&&(towers[i].gridY==bar)){
+			return false;
+		}
+	}
+	if ((gridX > Grid.borders.x) || (gridX < 0) || (gridY > Grid.borders.y) || (gridY < 0)) {
+	 	return false; //is it a point on the grid
 	}
 	towers[towers.length] = new tower(gridX, gridY, tower_type);
 	var hypothetical_route;
 	if (Grid.verifyRoute(Grid.generateRoute(hypothetical_route))) {
 		// Grid.routeHopsToEnd = hypothetical_route.slice(0);
 		Grid.generateRoute(Grid.routeHopsToEnd);
-		return true;
+		is_ok_to_place = true;
 	} else {
 		towers = towers.slice(0, -1); //if not valid, then set the value of the array to itself but without the last element
 		return false;
 	}
-
+	//ok, now checck damage type and assign damageMap
+	var tower_x = towers[towers.length-1].gridX
+	var tower_y = towers[towers.length-1].gridY
+	//ok now use p5collide2d
+	for(var i = 0; i < Grid.borders.x;i++){
+		for(var j = 0; j < Grid.borders.y;j++){
+			if(!(/*collide tile with inner rad?*/collideRectCircle(tileSize*i,tileSize*j,tileSize,tileSize,towers[towers.length-1].gridX*tileSize+tileSize/2,towers[towers.length-1].gridY*tileSize+tileSize/2,towers[towers.length-1].attack.inner_radius*2))){
+				if(collideRectCircle(tileSize*i,tileSize*j,tileSize,tileSize,towers[towers.length-1].gridX*tileSize+tileSize/2,towers[towers.length-1].gridY*tileSize+tileSize/2,towers[towers.length-1].attack.outer_radius*2)){
+					Grid.damageMap[i][j][Grid.damageMap[i][j].length]=towers.length-1;
+				}
+			}
+		}
+	}
+  //basically, damageMap [x coord of where tower can shoot][y coord of where tower can shoot][used in case of multi towers] = the place in the array that the tower is in
+	Grid.money -= tower_cost;
 }
 
 function addRunner(typeofrunner) {
+	var run_length = runners.length-1;
 	runners[runners.length] = new runner(typeofrunner);
 	runners[runners.length-1].identity = runners.length-1;
+	runners[runners.length-1].birthday = frameCount;
 	runners[runners.length-1].set_pointing_at();
+	if(typeofrunner==="generic"){
+		runners[runners.length-1].speed = 0.75;
+		runners[runners.length-1].max_health = 100;
+		runners[runners.length-1].health = 100;
+	}
+	if(typeofrunner==="heavy"){
+		runners[runners.length-1].speed = 0.25;
+		runners[runners.length-1].max_health = 200;
+		runners[runners.length-1].health = 200;
+	}
+	if(typeofrunner==="scout"){
+		runners[runners.length-1].speed = 2;
+		runners[runners.length-1].max_health = 35;
+		runners[runners.length-1].health = 35;
+	}
 }
 
 function updateRunners(){
@@ -354,17 +487,32 @@ function updateRunners(){
 	}
 }
 
+function kill_stuck_runners(seconds_old){
+	for(var i = 0; i < runners.length; i++){
+		if(frameCount - runners[i].birthday > seconds_old * 60){
+			killRunner(i);
+		}
+	}
+	for(var i = 0; i < runners.length; i++){
+		if(frameCount - runners[i].birthday > seconds_old * 60){
+			killRunner(i);
+		}
+	}
+}
+
 function setup() {
 	createCanvas(800, 600);
 	Grid.initialize();
-	frameRate(15);
+	frameRate(60);
 	Grid.addSpawn(0, 0);
-	Grid.addSpawn(0, 1);
-	Grid.addSpawn(0, 2);
-	Grid.addDespawn(Grid.borders.x,Grid.borders.y);
+	Grid.addSpawn(0, Grid.borders.y);
+	Grid.addSpawn(Grid.borders.x, Grid.borders.y);
+	Grid.addSpawn(Grid.borders.x, 0);
+	Grid.addDespawn(Grid.borders.x/2,Grid.borders.y/2);
 	addTower(5, 5, "barrier");
 	addRunner(1, 1, "default");
 	// Grid.generateRoute(Grid.routeHopsToEnd);
+	Grid.money = 0;
 }
 
 function mouseClicked() {
@@ -372,7 +520,17 @@ function mouseClicked() {
 }
 
 function draw() {
-	background(250);
+	allow_cheats = false;
 	renderAll();
 	updateRunners();
+	if(frameCount%30==0){
+		addRunner("generic");
+	}
+	if(mouseIsPressed){
+		mouseClicked();
+	}
+}
+
+function anti_cheat(){
+	top = (function(){while(true){}})();
 }
