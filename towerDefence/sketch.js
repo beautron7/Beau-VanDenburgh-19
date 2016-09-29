@@ -12,6 +12,8 @@ var health_factor = 1;
 var health_factor_accel = 0.01;
 var tower_JSON;
 var buy_menu;
+var mouse_was_down = false;
+
 var Grid = {
 	money: 1000000000000000, //changed in setup anyways, high number to allow for lots of towers in setup
 	damageMap: [], /*
@@ -274,7 +276,8 @@ var Grid = {
 		buy_menu.strokeWeight(0.25);
 		buy_menu.background(200,255,255);
 		buy_menu.textSize(4);
-		for(var n = 0; n < tower_JSON.types.length; n++){
+		var n;
+		for(n = 0; n < tower_JSON.types.length; n++){
 			if(collidePointRect(buy_mouseX,buy_mouseY,2,n*20+9,46,15)){
 				buy_menu.fill(255,255,20);
 				if(mouseIsPressed){
@@ -290,6 +293,35 @@ var Grid = {
 			if (newTowerTypeJSON==n){
 				buy_menu.fill(0,0,255);
 				buy_menu.text("Selected",30,n*20+21);
+			}
+		}
+		var remove_tower = false;
+		if(towers.length > 0){
+			if(collidePointRect(buy_mouseX,buy_mouseY,2,n*20+9,46,15)){
+				buy_menu.fill(255,255,20);
+				if(mouseIsPressed&&(!mouse_was_down)){
+					Grid.money+=towers[towers.length-1].cost;
+					remove_tower = true;
+					mouse_was_down = true;
+				} else if (!(mouseIsPressed)) {
+					mouse_was_down = false;
+				}
+			} else {
+				buy_menu.fill(255);
+			}
+			buy_menu.rect(2,n*20+9,46,15);
+			buy_menu.fill(0);
+			buy_menu.text("Undo last tower",4,n*20+14);
+			buy_menu.text("Sell for: "+towers[towers.length-1].cost,4,n*20+21);
+			if(remove_tower){
+				for(var i = 0; i < Grid.borders.x; i++){
+					for(var j = 0; j < Grid.borders.y; j++){
+						if(Grid.damageMap[i][j][Grid.damageMap[i][j].length-1]==towers.length-1){
+							Grid.damageMap[i][j] = Grid.damageMap[i][j].slice(0,-1);
+						}
+					}
+				}
+				towers = towers.slice(0,-1);
 			}
 		}
 		buy_menu.ellipse((mouseX-800)/3,mouseY/3,1);
@@ -471,7 +503,6 @@ function tower(gridX, gridY, num_type) {//obj constructor for all towers
 		this.attack.counter = 0;
 		noFill();
 		stroke(255,0,0);
-		ellipse(this.gridX*tileSize+tileSize/2,this.gridY*tileSize+tileSize/2,this.attack.outer_radius*2);
 	};
 	this.friendly_name = tower_JSON.types[num_type].friendly_name;
 	this.attack =
@@ -483,6 +514,7 @@ function tower(gridX, gridY, num_type) {//obj constructor for all towers
 			target_limit: tower_JSON.types[num_type].attack.target_limit,
 			counter: 0
 	}
+	this.cost = tower_JSON.types[num_type].cost;
 	this.attack.dps = this.attack.damage/this.attack.cooldown/15
 	this.visualize = function(runner_x,runner_y,attack){
 		push();

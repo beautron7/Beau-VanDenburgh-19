@@ -1,8 +1,9 @@
 {
   "types":[
     {
-      "friendly_name":"Pacafist Archer",
+      "friendly_name":"Pacifist Archer",
       "cost":10,
+      "visualize_lines":1,
       "attack":
       {
           "cooldown": 0,
@@ -15,6 +16,7 @@
     {
       "friendly_name":"Generic",
       "cost":100,
+      "visualize_lines":1,
       "attack":
       {
           "cooldown": 5,
@@ -27,6 +29,7 @@
     {
       "friendly_name":"Sniper",
       "cost":500,
+      "visualize_lines":1,
       "attack":
       {
           "cooldown": 30,
@@ -39,6 +42,7 @@
     {
       "friendly_name":"Tesla coil",
       "cost":500,
+      "visualize_lines":1,
       "attack":
       {
           "cooldown": 1,
@@ -52,6 +56,7 @@
     {
       "friendly_name":"Cannon",
       "cost":300,
+      "visualize_lines":1,
       "attack":
       {
           "cooldown": 30,
@@ -64,7 +69,8 @@
 
     {
       "friendly_name":"Nuke Factory",
-      "cost":1000,
+      "cost":10000,
+      "visualize_lines":0,
       "attack":
       {
           "cooldown": 900,
@@ -78,13 +84,27 @@
     {
       "friendly_name":"Tack Shooter",
       "cost":200,
+      "visualize_lines":1,
       "attack":
       {
           "cooldown": 15,
           "damage": 20,
           "inner_radius": 0,
           "outer_radius": 75,
-          "target_limit": 1000
+          "target_limit": 0
+      }
+    },
+    {
+      "friendly_name":"Lazer Beam",
+      "cost":2000,
+      "visualize_lines":1,
+      "attack":
+      {
+          "cooldown": 1,
+          "damage": 10,
+          "inner_radius": 0,
+          "outer_radius": 1000,
+          "target_limit": 1
       }
     }
   ]
