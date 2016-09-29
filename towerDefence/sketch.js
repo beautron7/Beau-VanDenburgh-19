@@ -2,14 +2,18 @@ var tileSize = 25;
 var runners = [];
 var towers = [];
 var newRunnerType = "generic";
+var newTowerTypeJSON = 0;
 var disable_warnings = false;
 var allow_cheats = false;
 var flash_money = 0;
 var spawn_quanity = 1;
 var spawn_quanity_accel = 0.003;
-
+var health_factor = 1;
+var health_factor_accel = 0.01;
+var tower_JSON;
+var buy_menu;
 var Grid = {
-	money: 1000000, //changed in setup anyways, high number to allow for lots of towers in setup
+	money: 1000000000000000, //changed in setup anyways, high number to allow for lots of towers in setup
 	damageMap: [], /*
 	damageMap is a variable which helps match the location of runners to how they die
 	quite simply, it is 2d array of arrays. the X and Y dimensions are the X and y of the grid,
@@ -128,6 +132,7 @@ var Grid = {
 		pop();
 	},
 	drawGrid: function() { //draws a grid
+		stroke(0);
 		for (var i = 0; i < Grid.borders.Xcoord; i += tileSize) {
 			line(i, 0, i, Grid.borders.Ycoord);
 		}
@@ -261,7 +266,43 @@ var Grid = {
 		}
 		return is_valid_route
 	},
+	render_buy_menu: function(){
+		push()
+		var buy_mouseX = convertCanvasBuy(mouseX,mouseY).x;
+		var buy_mouseY = convertCanvasBuy(mouseX,mouseY).y;
+		buy_menu.rectMode(CORNER);
+		buy_menu.strokeWeight(0.25);
+		buy_menu.background(200,255,255);
+		buy_menu.textSize(4);
+		for(var n = 0; n < tower_JSON.types.length; n++){
+			if(collidePointRect(buy_mouseX,buy_mouseY,2,n*20+9,46,15)){
+				buy_menu.fill(255,255,20);
+				if(mouseIsPressed){
+					newTowerTypeJSON = n;
+				}
+			} else {
+				buy_menu.fill(255)
+			}
+			buy_menu.rect(2,n*20+9,46,15);
+			buy_menu.fill(0);
+			buy_menu.text(tower_JSON.types[n].friendly_name,4,n*20+14);
+			buy_menu.text("Cost: "+tower_JSON.types[n].cost,4,n*20+21);
+			if (newTowerTypeJSON==n){
+				buy_menu.fill(0,0,255);
+				buy_menu.text("Selected",30,n*20+21);
+			}
+		}
+		buy_menu.ellipse((mouseX-800)/3,mouseY/3,1);
+		image(buy_menu,800,0,150,600);
+		pop()
+	}
 };
+function convertCanvasBuy(canvasX,canvasY){ //converts points from different coord systems
+	return createVector((canvasX-800)/3,canvasY/3)
+}
+function convertBuyCanvas(buyX,buyY){ //converts points from canvas to graphics
+	return createVector(buyX*3+800,buyY*3)
+}
 function changeTileSize(new_tile_size){//buggy, used to change tile size mid - game.
 	if(!(disable_warnings)){
 		console.log("It appears that you have called the function changeTileSize. This function is not completley functional and may cause glitches. if you wish to proceed, set disable_warnings to true, and procede with caution.");
@@ -281,6 +322,7 @@ function changeTileSize(new_tile_size){//buggy, used to change tile size mid - g
 	Grid.borders.Xcoord *= tileSize/oldTileSize;
 }
 function renderAll() { //to keep draw clean, all rendering functions are kept here.
+	strokeWeight(1);
 	background(250);
 	// Grid.visualizeHops(); //pathfinding
 	Grid.renderAllTowers();
@@ -289,6 +331,8 @@ function renderAll() { //to keep draw clean, all rendering functions are kept he
 	Grid.renderAllRunners();
 	// Grid.visualizeDamageMap(); //damageMap
 	Grid.drawGrid();
+	visualizeNewTower();
+	Grid.render_buy_menu();
 	Grid.displayMoney();
 	Grid.showFps();
 }
@@ -366,28 +410,31 @@ function runner(construct_type) { //obj constructor for all runners
 		//ok, so now we have moved. now is the fun part. we check to see if we are in a damage zone and if so, we check to see what type
 		for(var i = 0; i < Grid.damageMap[this.gridX][this.gridY].length; i++)
 		{
-			var n = Grid.damageMap[this.gridX][this.gridY][i]; //damageMap stores numbers which refrence which towers' attack can reach the tiles. we set n to be what tower we are refrencing for shorter code
-			if(frameCount%towers[n].attack.cooldown==0) //is the tower NOT on a cooldown?
+			var n = Grid.damageMap[this.gridX][this.gridY][i]; //damageMap stores numbers which refrence which towers' attack can reach the tiles. we set n to be what tower we are refrencing for
+			//shorter code
+			if(frameCount%towers[Grid.damageMap[this.gridX][this.gridY][i]].attack.cooldown==0) //is the tower NOT on a cooldown?
 			{
-				if((towers[n].attack.counter<towers[n].attack.target_limit)||(towers[n].attack.target_limit==0)) //has it already attacked for this turn beyond its limit? (0 means infinite)
+				if((towers[Grid.damageMap[this.gridX][this.gridY][i]].attack.counter<towers[Grid.damageMap[this.gridX][this.gridY][i]].attack.target_limit)||(towers[Grid.damageMap[this.gridX][this.gridY][i]].attack.target_limit==0)) //has it already attacked for this turn beyond its limit? (0 means infinite)
 				{
-					if(collideRectCircle(this.gridX*tileSize+this.gridXoff-tileSize/16,this.gridY*tileSize+this.gridYoff-tileSize/16,tileSize/8,tileSize/8,towers[n].gridX*tileSize+tileSize/2,towers[n].gridY*tileSize+tileSize/2,towers[n].attack.outer_radius*2)){
+					if(collideRectCircle(this.gridX*tileSize+this.gridXoff-tileSize/16,this.gridY*tileSize+this.gridYoff-tileSize/16,tileSize/8,tileSize/8,towers[Grid.damageMap[this.gridX][this.gridY][i]].gridX*tileSize+tileSize/2,towers[Grid.damageMap[this.gridX][this.gridY][i]].gridY*tileSize+tileSize/2,towers[Grid.damageMap[this.gridX][this.gridY][i]].attack.outer_radius*2)){
 					//does the runner collide with the tower's damage zone?
-						towers[n].attack.counter++;
-						towers[n].visualize(this.gridX*tileSize+this.gridXoff,this.gridY*tileSize+this.gridYoff,true);
-						this.raw_sustain_hit(towers[n].attack.damage); //autochecks and will kill if < 0 health
+						towers[Grid.damageMap[this.gridX][this.gridY][i]].attack.counter++; //add to the tower's attackCounter
+						confirm("tower:"+Grid.damageMap[this.gridX][this.gridY][i]+" now"+towers[Grid.damageMap[this.gridX][this.gridY][i]].attack.counter);
+						towers[Grid.damageMap[this.gridX][this.gridY][i]].visualize(this.gridX*tileSize+this.gridXoff,this.gridY*tileSize+this.gridYoff,true);// do the lazer!
+						this.raw_sustain_hit(towers[Grid.damageMap[this.gridX][this.gridY][i]].attack.damage); //autochecks and will kill if < 0 health
 					}
 				}
 			} else {
-				if((towers[n].attack.counter<towers[n].attack.target_limit)||(towers[n].attack.target_limit==0)) //has it already attacked for this turn beyond its limit? (0 means infinite)
+				if((towers[Grid.damageMap[this.gridX][this.gridY][i]].attack.counter<towers[Grid.damageMap[this.gridX][this.gridY][i]].attack.target_limit)||(towers[Grid.damageMap[this.gridX][this.gridY][i]].attack.target_limit==0)) //has it already attacked for this turn beyond its limit? (0 means infinite)
 				{
-					if(collideRectCircle(this.gridX*tileSize+this.gridXoff-tileSize/16,this.gridY*tileSize+this.gridYoff-tileSize/16,tileSize/8,tileSize/8,towers[n].gridX*tileSize+tileSize/2,towers[n].gridY*tileSize+tileSize/2,towers[n].attack.outer_radius*2)){
+					if(collideRectCircle(this.gridX*tileSize+this.gridXoff-tileSize/16,this.gridY*tileSize+this.gridYoff-tileSize/16,tileSize/8,tileSize/8,towers[Grid.damageMap[this.gridX][this.gridY][i]].gridX*tileSize+tileSize/2,towers[Grid.damageMap[this.gridX][this.gridY][i]].gridY*tileSize+tileSize/2,towers[Grid.damageMap[this.gridX][this.gridY][i]].attack.outer_radius*2)){
 					//does the runner collide with the tower's damage zone?
-						towers[n].attack.counter++;
-						towers[n].visualize(this.gridX*tileSize+this.gridXoff,this.gridY*tileSize+this.gridYoff,false);
+						towers[Grid.damageMap[this.gridX][this.gridY][i]].attack.counter++;
+						towers[Grid.damageMap[this.gridX][this.gridY][i]].visualize(this.gridX*tileSize+this.gridXoff,this.gridY*tileSize+this.gridYoff,false);
 					}
 				}
 			}
+			// console.log("frame:"+frameCount+" tower:"+n+" attacked so far:"+towers[n].attack.counter);
 		}
 
 	}
@@ -415,27 +462,28 @@ function killRunner(runner_id){ //deletes a runner from runners[]. aka the runne
 		runners[i].identity=i;
 	}
 }
-function tower(gridX, gridY, tower_type) {//obj constructor for all towers
+function tower(gridX, gridY, num_type) {//obj constructor for all towers
 	this.gridX = gridX;
 	this.gridY = gridY;
-	this.damage_type = tower_type;
 	this.render = function() {
 		fill(0, 0, 255);
 		rect(this.gridX * tileSize, this.gridY * tileSize, tileSize, tileSize);
 		this.attack.counter = 0;
+		noFill();
+		stroke(255,0,0);
+		ellipse(this.gridX*tileSize+tileSize/2,this.gridY*tileSize+tileSize/2,this.attack.outer_radius*2);
 	};
-	this.attack = {
-		counter: 0, //how many times has it attacked this frame
-		cooldown: 5, //num of frames between attack. game runs at 15 fps
-		damage: 30,
-		inner_radius: 0, //cartesian, target safe if within this boundary
-		outer_radius: 50, //cartesian, target safe if outside this boundary.
-		dps: this.damage/this.cooldown/30, //damage per second. convienience code, not actualy used
-		target_limit:1, //how many different targets can be simltaneously hurt. 0 is evaluated as infinite
-		calc_dps: function(){
-			this.dps = this.damage/this.cooldown/30
-		}
+	this.friendly_name = tower_JSON.types[num_type].friendly_name;
+	this.attack =
+	{
+			cooldown: tower_JSON.types[num_type].attack.cooldown,
+			damage: tower_JSON.types[num_type].attack.damage,
+			inner_radius: tower_JSON.types[num_type].attack.inner_radius,
+			outer_radius: tower_JSON.types[num_type].attack.outer_radius,
+			target_limit: tower_JSON.types[num_type].attack.target_limit,
+			counter: 0
 	}
+	this.attack.dps = this.attack.damage/this.attack.cooldown/15
 	this.visualize = function(runner_x,runner_y,attack){
 		push();
 		fill(255,0,0,255);
@@ -446,10 +494,10 @@ function tower(gridX, gridY, tower_type) {//obj constructor for all towers
 		pop();
 	}
 }
-function addTower(gridX, gridY, tower_type) {//proper way to add a tower
+function addTower(gridX, gridY, num_type) {//proper way to add a tower
 	var foo = gridX;
 	var bar = gridY;
-	var tower_cost = 75;
+	var tower_cost = tower_JSON.types[num_type].cost;
 	if ((gridX > Grid.borders.x) || (gridX < 0) || (gridY > Grid.borders.y) || (gridY < 0)) {
 		return false; //is it a point on the grid
 	}
@@ -463,7 +511,7 @@ function addTower(gridX, gridY, tower_type) {//proper way to add a tower
 			return false;
 		}
 	}
-	towers[towers.length] = new tower(gridX, gridY, tower_type);
+	towers[towers.length] = new tower(gridX, gridY, num_type);
 	var hypothetical_route;
 	if (Grid.verifyRoute(Grid.generateRoute(hypothetical_route))) {
 		// Grid.routeHopsToEnd = hypothetical_route.slice(0);
@@ -473,7 +521,6 @@ function addTower(gridX, gridY, tower_type) {//proper way to add a tower
 		towers = towers.slice(0, -1); //if not valid, then set the value of the array to itself but without the last element
 		return false;
 	}
-	towers[towers.length-1].friendly_name = tower_type;
 	var tower_x = towers[towers.length-1].gridX
 	var tower_y = towers[towers.length-1].gridY
 	//ok now use p5collide2d to add this tower's id to DamageMap
@@ -529,9 +576,16 @@ function kill_stuck_runners(seconds_old){//brokenish; occasionally, runners woul
 		}
 	}
 }
+function mouseClicked() {//p5
+	addTower(floor(mouseX / tileSize), floor(mouseY / tileSize), newTowerTypeJSON);
+}
+function preload(){
+	tower_JSON = loadJSON("/tower_properties.json");
+}
 function setup() {//p5
 	createCanvas(950, 600);
 	Grid.initialize();
+	buy_menu = createGraphics(150,height);
 	frameRate(15);
 	for(var o = 0; o < 4; o++){
 			Grid.addSpawn(0, o);
@@ -543,23 +597,33 @@ function setup() {//p5
 			Grid.addDespawn(2, Grid.borders.y-o);
 			Grid.addDespawn(3, Grid.borders.y-o);
 	}
-
+	Grid.money = 10000;
 	Grid.generateRoute(Grid.routeHopsToEnd);
-	Grid.money = 0;
 }
-function mouseClicked() {//p5
-	addTower(floor(mouseX / tileSize), floor(mouseY / tileSize), "generic");
-}
-function draw() {//p5
-	allow_cheats = false;
-	renderAll();
-	updateRunners();
+function spawn_runners(){
 	if(frameCount%30==0){
 		for(var i = 0; i < floor(spawn_quanity); i++){
 			addRunner(newRunnerType);
 		}
+		return true;
 	}
 	spawn_quanity+=spawn_quanity_accel;
+	return false;
+}
+function visualizeNewTower(){
+	push();
+	noFill();
+	ellipse(floor(mouseX/tileSize)*tileSize+tileSize/2,floor(mouseY/tileSize)*tileSize+tileSize/2,tower_JSON.types[newTowerTypeJSON].attack.outer_radius*2);
+	ellipse(floor(mouseX/tileSize)*tileSize+tileSize/2,floor(mouseY/tileSize)*tileSize+tileSize/2,tower_JSON.types[newTowerTypeJSON].attack.inner_radius*2);
+	stroke(0,0,255);
+	strokeWeight(3)
+	rect(floor(mouseX/tileSize)*tileSize,floor(mouseY/tileSize)*tileSize,tileSize,tileSize);
+	pop();
+}
+function draw() {//p5
+	renderAll();
+	updateRunners();
+	spawn_runners();
 	if(mouseIsPressed){
 		mouseClicked();
 	}

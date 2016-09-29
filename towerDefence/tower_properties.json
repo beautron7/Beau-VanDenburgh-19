@@ -1,7 +1,19 @@
 {
-  "towers":[
+  "types":[
     {
-      "friendly_name":"generic",
+      "friendly_name":"Pacafist Archer",
+      "cost":10,
+      "attack":
+      {
+          "cooldown": 0,
+          "damage": 0,
+          "inner_radius": 0,
+          "outer_radius": 0,
+          "target_limit":-1
+      }
+    },
+    {
+      "friendly_name":"Generic",
       "cost":100,
       "attack":
       {
@@ -9,12 +21,11 @@
           "damage": 30,
           "inner_radius": 0,
           "outer_radius": 50,
-          "target_limit":1,
+          "target_limit":3
       }
     },
-
     {
-      "friendly_name":"sniper",
+      "friendly_name":"Sniper",
       "cost":500,
       "attack":
       {
@@ -22,25 +33,24 @@
           "damage": 100,
           "inner_radius": 0,
           "outer_radius": 500,
-          "target_limit":1,
+          "target_limit":1
       }
     },
-
     {
-      "friendly_name":"tesla_coil",
+      "friendly_name":"Tesla coil",
       "cost":500,
       "attack":
       {
           "cooldown": 1,
-          "damage": 10,
+          "damage": 1,
           "inner_radius": 0,
           "outer_radius": 50,
-          "target_limit":0,
+          "target_limit":0
       }
     },
 
     {
-      "friendly_name":"cannon",
+      "friendly_name":"Cannon",
       "cost":300,
       "attack":
       {
@@ -48,12 +58,12 @@
           "damage": 300,
           "inner_radius": 0,
           "outer_radius": 200,
-          "target_limit":1,
+          "target_limit":1
       }
     },
 
     {
-      "friendly_name":"nuke_plant",
+      "friendly_name":"Nuke Factory",
       "cost":1000,
       "attack":
       {
@@ -61,12 +71,12 @@
           "damage": 1000,
           "inner_radius": 0,
           "outer_radius": 1000,
-          "target_limit": 1000,
+          "target_limit": 1000
       }
     },
 
     {
-      "friendly_name":"tack_shooter",
+      "friendly_name":"Tack Shooter",
       "cost":200,
       "attack":
       {
@@ -74,8 +84,8 @@
           "damage": 20,
           "inner_radius": 0,
           "outer_radius": 75,
-          "target_limit": 1000,
+          "target_limit": 1000
       }
-    },
+    }
   ]
 }
