@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Hello World!</title>
+    <script>
+      var user_variables = [];
+      var user_input;
+      var getCharType = function(inchar){
+        if((inchar=='1')||(inchar=='2')||(inchar=='3')||(inchar=='4')||(inchar=='5')||(inchar=='6')||(inchar=='7')||(inchar=='8')||(inchar=='9')||(inchar=='0')){return "num";} else if((inchar=='a')||(inchar=='b')||(inchar=='c')||(inchar=='d')||(inchar=='e')||(inchar=='f')||(inchar=='g')||(inchar=='h')||(inchar=='i')||(inchar=='j')||(inchar=='k')||(inchar=='l')||(inchar=='m')||(inchar=='n')||(inchar=='o')||(inchar=='p')||(inchar=='q')||(inchar=='r')||(inchar=='s')||(inchar=='t')||(inchar=='u')||(inchar=='v')||(inchar=='w')||(inchar=='x')||(inchar=='y')||(inchar=='z')){return "let";} else {return inchar;}
+      }
+      var textToEvalArr = function(instring){
+        var error = false;
+        var evals = []; //array of numbers and signs
+        var i = 0;
+        while(i < instring.length){
+          if(getCharType(instring.charAt(i))=="num"){
+            var is_positive = true;
+            if(i>0){
+              for(var q = i-1; q >= 0; q--){
+                if(instring.charAt(q)=="-"){
+                  is_positive = (is_positive+1)%2;
+                  evals=evals.slice(0,evals.length-1);
+                } else {
+                  break;
+                }
+              }
+            }
+            evals.push(instring.charAt(i))
+            for(var j = i+1; getCharType(instring.charAt(j))=="num"; j++){
+              evals[evals.length-1]+=instring.charAt(j); //we are adding to an array
+              i++;
+            }
+            evals[evals.length-1]=evals[evals.length-1]*1;//change to number
+            if(!is_positive){
+              evals[evals.length-1]*=-1
+              if(typeof evals[evals.length-2] == "number"){
+                evals.push(evals[evals.length-1]);
+                evals[evals.length-2] = '+'
+              }
+            }
+          } else if(getCharType(instring.charAt(i))=="let"){
+            evals.push(instring.charAt(i))
+            for(var j = i+1; getCharType(instring.charAt(j))=="let"; j++){
+              evals[evals.length-1]+=instring.charAt(j); //we are adding to an array
+              i++;
+            }
+          } else {
+            evals.push(instring.charAt(i));//signs
+          }
+          i++;
+        }
+        return evals
+      }
+      var solveArr = function(evals){
+        {
+          var parintheseeCounter = 0;
+          for(var i = 0; i < evals.length; i++){
+            if(evals[i]=="(")parintheseeCounter++;
+            if(evals[i]==")")parintheseeCounter--;
+          }
+          if (parintheseeCounter!=0){
+            return false;
+          }
+        }
+        if(evals.indexOf("(")!=-1){ //if there are parinthesees
+          var parintheseeCounter = 1;
+          for(var i = evals.indexOf("(")+1; i < evals.length; i++){
+            if(evals[i]=="(")parintheseeCounter++;
+            if(evals[i]==")")parintheseeCounter--;
+            if(parintheseeCounter===0){
+              var placeholderarray = [];
+              var modded_digit = evals.indexOf("(")
+              evals = placeholderarray.concat(
+                evals.slice(0,evals.indexOf("(")),
+                solveArr(evals.slice(evals.indexOf("(")+1,i)),
+                evals.slice(i+1,evals.length)
+              );
+            }
+          }
+        }
+        //by now, all parinthesees are removed
+        for(var i = 0; i < evals.length; i++){
+          if(evals[i]=="^"){
+            if((i < 1)||(i > evals.length-2)){
+              error = true;
+              break;
+            } else {
+              if((typeof evals[i-1] == "number")&&(typeof evals[i+1] == "number")){
+                  var placeholderarray = [];
+                  evals = placeholderarray.concat(evals.slice(0,i-1),[Math.pow(evals[i-1],evals[i+1])],evals.slice(i+2,evals.length));
+              }
+            }
+          }
+        }
+        for(var i = 0; i < evals.length; i++){
+          if(evals[i]=="/"){
+            if((i < 1)||(i > evals.length-2)){
+              error = true;
+              console.log("error")
+              return;
+            } else {
+              if((typeof evals[i-1] == "number")&&(typeof evals[i+1] == "number")){
+                  var placeholderarray = [];
+                  evals = placeholderarray.concat(evals.slice(0,i-1),[evals[i-1]/evals[i+1]],evals.slice(i+2,evals.length));
+              } else {
+                console.log("error")
+                return;
+              }
+              i -=3;
+            }
+          }
+          if(evals[i]=="*"){
+            if((i < 1)||(i > evals.length-2)){
+              error = true;
+              console.log("error")
+              return;
+            } else {
+              if((typeof evals[i-1] == "number")&&(typeof evals[i+1] == "number")){
+                  var placeholderarray = [];
+                  evals = placeholderarray.concat(evals.slice(0,i-1),[evals[i-1]*evals[i+1]],evals.slice(i+2,evals.length));
+              }
+              i -=3;
+            }
+          }
+        }
+        for(var i = 0; i < evals.length; i++){
+          if(evals[i]=="+"){
+            if((i < 1)||(i > evals.length-2)){
+              error = true;
+              console.log("error")
+              return;
+            } else {
+              if((typeof evals[i-1] == "number")&&(typeof evals[i+1] == "number")){
+                  var placeholderarray = [];
+                  evals = placeholderarray.concat(evals.slice(0,i-1),[evals[i-1]+evals[i+1]],evals.slice(i+2,evals.length));
+              }
+            }
+          }
+        }
+        return evals;
+      }
+    </script>
+  </head>
+  <body>
+    <h1>Hello World!</h1>
+    We are using node <script>document.write(process.versions.node)</script>,
+    Chrome <script>document.write(process.versions.chrome)</script>,
+    and Electron <script>document.write(process.versions.electron)</script>.<br>
+    <input type="text" id="input_textbox"></input>
+    <button type="button" onclick="user_input = document.getElementById('input_textbox').value;solveArr(textToEvalArr(input_textbox))">Evaluate</button>
+  </body>
+</html>
