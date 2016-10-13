@@ -23,7 +23,7 @@ function draw() {
   } 
   prevMouseX=mouseX;
   prevMouseY=mouseY;
-  drawGraph([0,0.1,1,0.1],graphBorders);
+  drawGraph([10,-21,6,63,3,1],graphBorders);
   fill(255,128,128);
   text("X:"+floor(map(mouseX,0,width,graphBorders[0],graphBorders[1])*1000)/1000+" Y:"+floor(map(mouseY,0,height,graphBorders[3],graphBorders[2])*1000)/1000,width,height)
 }

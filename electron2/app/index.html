@@ -15,6 +15,7 @@
         var evals = []; //array of numbers and signs
         var i = 0;
         while(i < instring.length){
+          console.log(i);
           if(getCharType(instring.charAt(i))=="num"){
             var is_positive = true;
             if(i>0){
@@ -152,6 +153,7 @@
               if((typeof evals[i-1] == "number")&&(typeof evals[i+1] == "number")){
                   var placeholderarray = [];
                   evals = placeholderarray.concat(evals.slice(0,i-1),[evals[i-1]+evals[i+1]],evals.slice(i+2,evals.length));
+                  i--;
               }
             }
           }
