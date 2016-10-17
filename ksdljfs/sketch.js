@@ -84,9 +84,10 @@ function drawGraph(coeffs,borders){
 	var prevpt=createVector(0,0);
 	for(var x = borders[0]; x < borders[1]; x+= incriment){
 		var yval = 0;
-		for(var i = 0; i < coeffs.length; i++){
-			yval += coeffs[i]*Math.pow(x,i);
-		}
+		// for(var i = 0; i < coeffs.length; i++){
+		// 	yval += coeffs[i]*Math.pow(x,i);
+		// }
+		yval = ((1-5*x)/(1+2*x))
 		line(map(x,borders[0],borders[1],0,width),map(yval,borders[2],borders[3],height,0),prevpt.x,prevpt.y)
 		prevpt = createVector(map(x,borders[0],borders[1],0,width),map(yval,borders[2],borders[3],height,0));
 	}

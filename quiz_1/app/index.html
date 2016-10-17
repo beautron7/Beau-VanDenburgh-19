@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Eheu</title>
+    <script> //prep for jquery load
+      window.nodeRequire = require;
+      delete window.require;
+      delete window.exports;
+      delete window.module;
+    </script>
+    <script src="jquery/dist/jquery.min.js" type="text/javascript"></script>
+    <!-- <script src="libraries/p5.js" type="text/javascript"></script> -->
+    <!-- <script src="libraries/p5.dom.js" type="text/javascript"></script> -->
+    <!-- <script src="libraries/p5.sound.js" type="text/javascript"></script> -->
+    <!-- <script src="sketch.js" type="text/javascript"></script> -->
+    <style> body {padding: 0; margin: 0;} canvas {vertical-align: top;} </style>
+    <script>
+      $(document).ready(function(){
+        function consolelog(instr){
+          $(".consolelog").append(instr+"<br><br>")
+        }
+        function ratioSweetFruits(arr) {
+          var fruitsthatare = {sweet:0,sour:0};
+
+          for(var i = 0; i < fruits.length; i++){
+            if(fruits[i].sweet){
+              fruitsthatare.sweet++
+            } else {
+              fruitsthatare.sour++
+            }
+          }
+          return fruitsthatare.sweet/fruitsthatare.sour;
+        }
+
+        function Politician(name,party,rating){
+          this.nayme = name;
+          this.party = party;
+          this.aprov = rating;
+          this.runin = true;
+          this.oopsie = function(){
+            if(this.nayme == "Trump"){
+              consolelog("<b>Trump made an oopsie, but his approvability was unaffected???</b>")
+              return;
+            } else {
+              if(this.approv<30){
+                this.runin = false;
+                consolelog(this.nayme+"dropped out")
+              } else {
+                this.aprov-=30;
+              }
+            }
+          }
+        }
+
+        var politicians = [];
+        var fruits = [{fruit: "apple", sweet: true},{fruit: "tomato", sweet: false},{fruit: "pear", sweet: true}, {fruit:"lemon", sweet: false}, {fruit:"grape", sweet: true}];
+        var clowns = [{
+          name: "Smitty",
+          location: {
+            current: "City Park",
+            spotted: "CircleK"
+          }
+        }, {
+          name: "Big Red",
+          location: {
+            current: "Uptown",
+            spotted: "Mojo"
+          }
+        }, {
+          name: "Bernie",
+          location: {
+            current: "Unknown",
+            spotted: "Wal Mart"
+          }
+        }];
+        consolelog(clowns[2].name+" was spotted at "+clowns[2].location.spotted)
+        consolelog("The ratio of sweet to sour is "+ratioSweetFruits(fruits)+" to 1");  // prints 1.5 = 3/2
+        politicians[0] = new Politician("Trump","Republican",100);
+        politicians[1] = new Politician("Hillary","Democrat",100);
+
+        // random politician has an oopsie
+        politicians[Math.floor(Math.random()*2)].oopsie();
+
+        // print out politicians' ratings
+        consolelog(politicians[0].nayme + " " + politicians[0].aprov + "%")
+        consolelog(politicians[1].nayme + " " + politicians[1].aprov + "%")
+      })
+  </script>
+  </head>
+  <body>
+    <h1>Quiz 1</h1>
+    <p class = "consolelog"></p>
+  </body>
+</html>
