@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Calculator</title>
+    <script>
+      const {ipcRenderer} = require('electron')
+      var user_variables = [{name:"pi",value:3.14159265359},{name:"tao",value:3.14159265359*2},];
+      var user_input;
+      var getCharType = function(inchar){
+        if((inchar=='1')||(inchar=='2')||(inchar=='3')||(inchar=='4')||(inchar=='5')||(inchar=='6')||(inchar=='7')||(inchar=='8')||(inchar=='9')||(inchar=='0')){return "num";} else if((inchar=='a')||(inchar=='b')||(inchar=='c')||(inchar=='d')||(inchar=='e')||(inchar=='f')||(inchar=='g')||(inchar=='h')||(inchar=='i')||(inchar=='j')||(inchar=='k')||(inchar=='l')||(inchar=='m')||(inchar=='n')||(inchar=='o')||(inchar=='p')||(inchar=='q')||(inchar=='r')||(inchar=='s')||(inchar=='t')||(inchar=='u')||(inchar=='v')||(inchar=='w')||(inchar=='x')||(inchar=='y')||(inchar=='z')||(inchar=='A')||(inchar=='B')||(inchar=='C')||(inchar=='D')||(inchar=='E')||(inchar=='F')||(inchar=='G')||(inchar=='H')||(inchar=='I')||(inchar=='J')||(inchar=='K')||(inchar=='L')||(inchar=='M')||(inchar=='N')||(inchar=='O')||(inchar=='P')||(inchar=='Q')||(inchar=='R')||(inchar=='S')||(inchar=='T')||(inchar=='U')||(inchar=='V')||(inchar=='W')||(inchar=='X')||(inchar=='Y')||(inchar=='Z')||(inchar=='!')||(inchar=='_')){return "let";} else {return inchar;}
+      }
+      var textToEvalArr = function(instring){
+        var error = false;
+        var evals = []; //array of numbers and signs
+        var i = 0;
+        while(i < instring.length){
+          console.log(i);
+          if(getCharType(instring.charAt(i))=="num"){
+            var is_positive = true;
+            if(i>0){
+              for(var q = i-1; q >= 0; q--){
+                if(instring.charAt(q)=="-"){
+                  is_positive = (is_positive+1)%2;
+                  evals=evals.slice(0,evals.length-1);
+                } else {
+                  break;
+                }
+              }
+            }
+            evals.push(instring.charAt(i))
+            for(var j = i+1; ((getCharType(instring.charAt(j))=="num")||instring.charAt(j)=="."); j++){
+              evals[evals.length-1]+=instring.charAt(j); //we are adding to an array
+              i++;
+            }
+            evals[evals.length-1]=evals[evals.length-1]*1;//change to number
+            if(!is_positive){
+              evals[evals.length-1]*=-1
+              if(typeof evals[evals.length-2] == "number"){
+                evals.push(evals[evals.length-1]);
+                evals[evals.length-2] = '+'
+              }
+            }
+          } else if(getCharType(instring.charAt(i))=="let"){
+            evals.push(instring.charAt(i))
+            for(var j = i+1; getCharType(instring.charAt(j))=="let"; j++){
+              evals[evals.length-1]+=instring.charAt(j); //we are adding to an array
+              i++;
+            }
+          } else {
+            evals.push(instring.charAt(i));//signs
+          }
+          i++;
+        }
+        for(var i = 0; i < evals.length; i++){
+          if(evals[i]===" "){
+            arr = [];
+            evals = arr.concat(evals.slice(0,i),evals.slice(i+1,evals.length));
+          }
+        }
+        return evals;
+      }
+      var solveArr = function(evals){
+        for(var i = 0; i < evals.length; i++){
+          if(typeof evals[i] == "string"){
+            if(getCharType(evals[i].charAt(0))=="let"){
+              for(var j = 0; j < user_variables.length; j++){
+                if(evals[i]==user_variables[j].name){
+                  evals[i]=user_variables[j].value;
+                }
+              }
+            }
+          }
+        }
+        {
+          var parintheseeCounter = 0;
+          for(var i = 0; i < evals.length; i++){
+            if(evals[i]=="(")parintheseeCounter++;
+            if(evals[i]==")")parintheseeCounter--;
+          }
+          if (parintheseeCounter!=0){
+            return false;
+          }
+        }
+        if(evals.indexOf("(")!=-1){ //if there are parinthesees
+          var parintheseeCounter = 1;
+          for(var i = evals.indexOf("(")+1; i < evals.length; i++){
+            if(evals[i]=="(")parintheseeCounter++;
+            if(evals[i]==")")parintheseeCounter--;
+            if(parintheseeCounter===0){
+              var placeholderarray = [];
+              var modded_digit = evals.indexOf("(")
+              evals = placeholderarray.concat(
+                evals.slice(0,evals.indexOf("(")),
+                solveArr(evals.slice(evals.indexOf("(")+1,i)),
+                evals.slice(i+1,evals.length)
+              );
+            }
+          }
+        }
+        //by now, all parinthesees are removed
+        for(var i = 0; i < evals.length; i++){
+          if(evals[i]=="^"){
+            if((i < 1)||(i > evals.length-2)){
+              error = true;
+              break;
+            } else {
+              if((typeof evals[i-1] == "number")&&(typeof evals[i+1] == "number")){
+                  var placeholderarray = [];
+                  evals = placeholderarray.concat(evals.slice(0,i-1),[Math.pow(evals[i-1],evals[i+1])],evals.slice(i+2,evals.length));
+              }
+            }
+          }
+        }
+        for(var i = 0; i < evals.length; i++){
+          if(evals[i]=="/"){
+            if((i < 1)||(i > evals.length-2)){
+              error = true;
+              console.log("error")
+              return;
+            } else {
+              if((typeof evals[i-1] == "number")&&(typeof evals[i+1] == "number")){
+                  var placeholderarray = [];
+                  evals = placeholderarray.concat(evals.slice(0,i-1),[evals[i-1]/evals[i+1]],evals.slice(i+2,evals.length));
+              } else {
+                console.log("error")
+                return;
+              }
+              i -=3;
+            }
+          }
+          if(evals[i]=="*"){
+            if((i < 1)||(i > evals.length-2)){
+              error = true;
+              console.log("error")
+              return;
+            } else {
+              if((typeof evals[i-1] == "number")&&(typeof evals[i+1] == "number")){
+                  var placeholderarray = [];
+                  evals = placeholderarray.concat(evals.slice(0,i-1),[evals[i-1]*evals[i+1]],evals.slice(i+2,evals.length));
+              }
+              i -=3;
+            }
+          }
+        }
+        for(var i = 0; i < evals.length; i++){
+          if(evals[i]=="+"){
+            if((i < 1)||(i > evals.length-2)){
+              error = true;
+              console.log("error")
+              return;
+            } else {
+              if((typeof evals[i-1] == "number")&&(typeof evals[i+1] == "number")){
+                  var placeholderarray = [];
+                  evals = placeholderarray.concat(evals.slice(0,i-1),[evals[i-1]+evals[i+1]],evals.slice(i+2,evals.length));
+                  i--;
+              }
+            }
+          }
+        }
+        return evals;
+      }
+      var appendItem = function(instr){
+        document.getElementById("results").innerHTML = document.getElementById("results").innerHTML + "<li>"+instr+"</li>";
+      }
+      var textSubmitted = function(){
+        user_input = document.getElementById('input_textbox').value;
+        if(user_input.length==0){
+
+        } else if (user_input.charAt(0)=="v"){ //make a var?
+          if(user_input.slice(0,3)=="var"){ //make a var.
+            var eval = textToEvalArr(user_input);
+            if (eval[2]=="="){
+              for(var i = 0; i < user_variables.length; i++){
+                if(user_variables[i].name == eval[1]){
+                  user_variables[i].value = solveArr(eval.slice(3,eval.length))[0];
+                  appendItem("Variable "+user_variables[i].name+" changed to "+user_variables[i].value);
+                  document.getElementById('input_textbox').value = ""
+                  window.scrollTo(0,5000000);
+                  return true;
+                }
+              }
+              user_variables.push({name:eval[1],value:solveArr(eval.slice(3,eval.length))[0]})
+            } else {return false;}
+            appendItem("Variable "+user_variables[user_variables.length-1].name+" initialized and set to "+user_variables[user_variables.length-1].value);
+            console.log(eval)
+          }
+        } else if (user_input.charAt(0)=="g"){//make a graph?
+          if(user_input.slice(0,5)=="graph"){
+            var user_array_input = textToEvalArr(user_input);
+            var coeffs = [];
+            for (var i = 0; i < user_array_input.length; i++){
+              if(typeof user_array_input[i] == "number"){
+                var num_of_coeffs = coeffs.length;
+                for(var j = num_of_coeffs-1; j >= 0; j--){
+                  coeffs[j+1]=coeffs[j];
+                }
+                coeffs[0] = user_array_input[i];
+              }
+            }
+            open_graphing_window(coeffs);
+            var resultString = "Graphed: Y = "
+            for(var i = coeffs.length-1; i >= 0; i--){
+              if(coeffs[i]==1){
+                if(i == 0){
+                  //do nothing
+                } else {
+                  coeffs[i]=""
+                }
+              }
+              if(i>1){
+                if(coeffs[i]!==0){
+                  resultString+=coeffs[i]+"X"+"<sup>"+(i)+"</sup>";
+                  if(coeffs[i-1]<0){
+                    resultString+="  "
+                  } else {
+                    resultString+=" +"
+                  }
+                } else {
+                  resultString=resultString.slice(0,-2);
+                  if(coeffs[i-1]<0){
+                    resultString+="  "
+                  } else {
+                    resultString+=" +"
+                  }
+                }
+              } else if (i == 1){
+                if(coeffs[1]===0){
+                  resultString=resultString.slice(0,-2);
+                  if(coeffs[i-1]<0){
+                    resultString+="  "
+                  } else {
+                    resultString+=" +"
+                  }
+                } else {
+                  resultString+=coeffs[1]+"X";
+                  if(coeffs[0]<0){
+                    resultString+=" "
+                  } else {
+                    resultString+=" +"
+                  }
+                }
+              } else if (i == 0) {
+                if(coeffs[0]===0){
+                  resultString=resultString.slice(0,-2);
+                } else {
+                  resultString+=coeffs[0];
+                }
+              }
+            }
+            appendItem(resultString)
+          } else {
+            appendItem(user_input+' = '+Math.round(solveArr(textToEvalArr(user_input))*10000000000000)/10000000000000) //because js handles decimals perfectly
+          }
+        } else {
+          appendItem(user_input+' = '+Math.round(solveArr(textToEvalArr(user_input))*10000000000000)/10000000000000) //because js handles decimals perfectly
+        }
+        document.getElementById('input_textbox').value = ""
+        window.scrollTo(0,5000000);
+      }
+      var open_graphing_window = function(coeffs){
+        console.log(ipcRenderer.sendSync('main_comunications',['open the graphing window',coeffs]))
+      }
+      // ipcRenderer.on('asynchronous-reply', (event, arg) => {
+      //   console.log(arg) // prints "pong"
+      // })
+      // ipcRenderer.send('asynchronous-message', 'ping')
+
+    </script>
+    <style>
+    .bottom_bar {
+      position: fixed;
+      bottom: 0px;
+      left: 0px;
+      right: 0px;
+      padding-bottom: 10px;
+      padding-left: 10px;
+      padding-top: 10px;
+      padding-right: 10px;
+      background-color: black;
+    }
+    .textbox {
+      font-family: "Arial";
+      font-size: 20px;
+    }
+    .submitbutton{
+      position: fixed;
+      right: 10px;
+      bottom: 10px;
+      height: 30px;
+      font-family: "Arial";
+      font-size: 20px;
+    }
+    .resultsarea{
+       position: absolute;
+       top: 80px; /* Header Height */
+       bottom: 30px; /* Footer Height */
+       width: 100%;
+       z-index: -1;
+    }
+    .results{
+      font-family: "Arial";
+      font-size: 20px;
+      margin-bottom: 70px;
+    }
+    h1{
+      position: fixed;
+      top: 0px;
+      left: 10px;
+      font-family: "Arial";
+    }
+    .titlediv{
+      position: fixed;
+      top: 0px;
+      left: 0px;
+      width: 9999px;
+      height: 80px;
+      background-color:#00FFFF
+    }
+    </style>
+  </head>
+  <body>
+    <div class="titlediv">
+      <h1>Mini-Calculator</h1>
+    </div>
+    <!-- We are using node <script>document.write(process.versions.node)</script>, -->
+    <!-- Chrome <script>document.write(process.versions.chrome)</script>, -->
+    <!-- and Electron <script>document.write(process.versions.electron)</script>.<br> -->
+    <div class="resultsarea">
+      <ul class="results" id="results">
+      </ul>
+    </div>
+    <div class="bottom_bar">
+      <form action="javascript:textSubmitted();">
+        <input type="text" class="textbox" autofocus id="input_textbox"></input>
+        <button type="submit" class="submitbutton">Evaluate</button>
+      </form>
+    </div>
+  </body>
+</html>
