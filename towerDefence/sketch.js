@@ -52,6 +52,7 @@ var Grid = {
 		Ycoord: 600,
 	},
 	addSpawn: function(gridX, gridY) { //adds a spawn without using new spawn(); to prevent erroneous code.
+	   console.log()
 		Grid.spawns[Grid.spawns.length] = {
 			x: floor(gridX),
 			y: floor(gridY),
@@ -247,7 +248,7 @@ var Grid = {
 			Grid.routeHopsToEnd[i] = [];
 			Grid.damageMap[i] = [];
 			for (var j = 0; j <= this.borders.y; j++){
-				Grid.damageMap[i][j]=[];
+				this.damageMap[i][j]=[];
 			}
 		}
 	},
