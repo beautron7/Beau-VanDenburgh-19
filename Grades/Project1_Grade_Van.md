@@ -24,7 +24,7 @@ At least one instance of the following components must be used (not just declare
 | Design and Style | I love the modularization of your code- the function names are appropriate and informative. I'm not entirely sure that the best way to structure your code is through a monolithic object (Grid) but you may have a compelling argument for why you chose this route. It seems to me that some of the properties could be pulled out to better organize your data.   | 97 |
 | Creativity |  Awesome.   | 97  |
 | Effort |     Way to take this to the next level!       | 98  |
-| Presentation |   Great job pulling out the most interesting code- algorithm for determining routes.   | 96  |
+| Presentation |   Great job pulling out the most interesting code- algorithm for determining routes. I laughed when you said, "I forgot what this part does." Next time, just don't say anything about it and no one will know!   | 96  |
 
 
 
