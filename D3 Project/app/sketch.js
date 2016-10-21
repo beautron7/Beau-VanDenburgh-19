@@ -7,9 +7,7 @@ var canvas = d3.select("body")
   .append("svg")
   .attr("width",width)
   .attr("height",500);
-var actualdata = [];
 var actualactualdata = [];
-var actualactualdatacount = [];
 var organizedData = []
 
 var numrows = 3
@@ -17,21 +15,21 @@ var numcollums = 10
 var highestnumber = 0;
 
 ssv("data/other.txt", data => {
+  var actualdata = [];
   for(var i = 0; i < data.length; i++){
     for(var j = 0; j < data[i].speechcontents.length; j++){
       if((data[i].speechcontents.charAt(j)==" ")||(data[i].speechcontents.charAt(j)==".")){
-        actualdata[actualdata.length] = data[i].speechcontents.charAt(j);
+        actualdata[actualdata.length] = " ";
       } else {
         actualdata[actualdata.length-1] += data[i].speechcontents.charAt(j);
       }
     }
   }
   for(var i = 0; i < actualdata.length; i++){
-    console.log("foo")
     var datawasfound = false; //does data already exist
     for(var j = 0; j < actualactualdata.length; j++){
       if(actualdata[i]==actualactualdata[j].word){
-        actualactualdata[i].count++;
+        actualactualdata[j].count++;
         if (highestnumber < actualactualdata[j].count){
           highestnumber = actualactualdata[j].count;
         }
@@ -40,7 +38,7 @@ ssv("data/other.txt", data => {
       }
     }
     if(!datawasfound){
-      actualactualdata.push({data:actualdata[i],count:1})
+      actualactualdata.push({word:actualdata[i],count:1})
     }
   }
   delete actualdata;
@@ -49,6 +47,7 @@ ssv("data/other.txt", data => {
 
     }
   }
+  console.log("done!")
 })
 
 // d3.selectAll("p").style("color", fn => {
