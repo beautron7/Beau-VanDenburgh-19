@@ -3,6 +3,7 @@ var prevMouseY;
 var graphBorders = [-10,10,-10,10];
 var graphXspan = graphBorders[1]-graphBorders[0];
 var graphYspan = graphBorders[3]-graphBorders[2];
+var equation;
 
 function setup() {
  createCanvas(800,800);
@@ -10,6 +11,7 @@ function setup() {
  background(128);
   textSize(25)
   textAlign(RIGHT)
+ equation = prompt("Y= (use lowercase x, use x*x or Math.pow(x,2) instead of x^2, parinthesees OK)")
 }
 
 function draw() {
@@ -87,7 +89,7 @@ function drawGraph(coeffs,borders){
 		// for(var i = 0; i < coeffs.length; i++){
 		// 	yval += coeffs[i]*Math.pow(x,i);
 		// }
-		yval = ((1-5*x)/(1+2*x))
+		yval = eval(equation);
 		line(map(x,borders[0],borders[1],0,width),map(yval,borders[2],borders[3],height,0),prevpt.x,prevpt.y)
 		prevpt = createVector(map(x,borders[0],borders[1],0,width),map(yval,borders[2],borders[3],height,0));
 	}
