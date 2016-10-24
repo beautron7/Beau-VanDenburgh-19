@@ -10,11 +10,12 @@ var canvas = d3.select("body")
 
 var numrows = 3
 var numcollums = 10
-var highestnumber = 0;
 
-function interpet_transcript(){
-  ssv("data/other.txt", data, => {
-    var actualactualdata = [];
+function interpet_transcript(href,variable){
+  var returnData = "foobar";
+  variable.highestnumber=0
+  variable.words=[];
+  ssv(href, data => {
     var actualdata = [];
     for(var i = 0; i < data.length; i++){
       for(var j = 0; j < data[i].speechcontents.length; j++){
@@ -27,31 +28,41 @@ function interpet_transcript(){
     }
     for(var i = 0; i < actualdata.length; i++){
       var datawasfound = false; //does data already exist
-      for(var j = 0; j < actualactualdata.length; j++){
-        if(actualdata[i]==actualactualdata[j].word){
-          actualactualdata[j].count++;
-          if (highestnumber < actualactualdata[j].count){
-            highestnumber = actualactualdata[j].count;
+      for(var j = 0; j < variable.words.length; j++){
+        if(actualdata[i]==variable.words[j].word){
+          variable.words[j].count++;
+          if (variable.highestnumber < variable.words[j].count){
+            variable.highestnumber = variable.words[j].count;
           }
           datawasfound = true;
           break;
         }
       }
       if(!datawasfound){
-        actualactualdata.push({word:actualdata[i],count:1})
+        variable.words.push({word:actualdata[i],count:1})
       }
     }
-    delete actualdata;
-    for(var r = 0; r < numrows; r++){
-      for(var c = 0; c < numcollums; c++){
-
-      }
-    }
-    console.log("done!")
-    return actualactualdata;
-  })  
+  })
+  console.log(variable)
 }
-
+function jointranscripts(arr_of_transcripts,new_transcript){
+  var highestcount = 0;
+  new_transcript.words = [];
+  for(var i = 0; i < arr_of_transcripts.length; i++){
+    if (highestcount < arr_of_transcripts[i].highestcount){
+      highestcount = arr_of_transcripts[i].highestcount;
+    }
+    for(var j = 0; j<arr_of_transcripts[i].words.length; j++){
+      new_transcript.words.push(arr_of_transcripts[i].words[j]);
+    }
+  }
+  new_transcript.highestcount = highestcount
+}
+var trump_data = {};
+interpet_transcript("data/other.txt",trump_data);
+var trump_data_2 = {};
+interpet_transcript("data/other.txt",trump_data_2);
+// var repub_data = interpet_transcript("data/repub_primary.txt");
 // d3.selectAll("p").style("color", fn => {
 //   return "hsl(" + Math.random() * 360 + ",100%,50%)";
 // });
