@@ -89,7 +89,7 @@ function drawGraph(coeffs,borders){
 		// for(var i = 0; i < coeffs.length; i++){
 		// 	yval += coeffs[i]*Math.pow(x,i);
 		// }
-		yval = eval(equation);
+		yval = (2*x)/(1-x);
 		line(map(x,borders[0],borders[1],0,width),map(yval,borders[2],borders[3],height,0),prevpt.x,prevpt.y)
 		prevpt = createVector(map(x,borders[0],borders[1],0,width),map(yval,borders[2],borders[3],height,0));
 	}
