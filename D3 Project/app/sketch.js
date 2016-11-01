@@ -23,9 +23,9 @@ Math.map = function(value, minin, maxin, minout, maxout) { //convers value from 
 }
 
 Math.denormalize = function(value, start, stop) { //converts range from 0 - 1 to start - stop
-    return value * (stop - start) + start;
-}
-//end
+        return value * (stop - start) + start;
+    }
+    //end
 
 function sortarr(arrtosort, index) {
     //sortarr(arr,"arr[i].index")
@@ -111,13 +111,14 @@ function interpet_transcript(href, variable, cutoff) {
                     i--
                 }
             }
-        }
+        }``
     })
-},
+}
 
-function getPointOnCombinedTranscipt(combined_transcript, time) {
+function getPointOnCombinedTranscipt(combined_transcript, time, varnamestr) {
     var synth_transcript = {
-        isA: "synth_transcript"
+        isA: "synth_transcript",
+        words:[]
     };
     var highest_value = 0;
     if (combined_transcript.isA != "combined_transcript") {
@@ -125,11 +126,16 @@ function getPointOnCombinedTranscipt(combined_transcript, time) {
         throw "error: not a combined transcript"
     }
     for (var i = 0; i < combined_transcript.words.length; i++) {
-        synth_transcript.words.push({
-            word: combined_transcript.words,
-            count: Math.denormalize(t, combined_transcript.words[i].startcount, combined_transcript.words[i].endcount)
-        })
+        synth_transcript.words[synth_transcript.words.length] = {
+            word: combined_transcript.words[i].word,
+            count: Math.denormalize(time, combined_transcript.words[i].startcount, combined_transcript.words[i].endcount)
+        }
+        if (synth_transcript.words[synth_transcript.words.length-1].count > highest_value) {
+            highest_value = synth_transcript.words[synth_transcript.words.length-1].count;
+        }
     }
+    synth_transcript.global_refrence = varnamestr;
+    synth_transcript.highestnumber = highest_value;
     return synth_transcript;
 }
 
@@ -143,42 +149,77 @@ function BubblegraphTranscript(datae) {
     this.groups = this.svg.selectAll("g").data(datae.words).enter().append("g"); //used so that new groups are not appended
     this.circles = this.groups.append("circle"); //used to ensure no new appendings
     this.lables = this.groups.append("text"); //used to ensure no new appendings
-
-    this.update = function() {
-        this.previousradpos = 0;
-        this.ypos_circle = 70;
-        this.longest_rad = 0;
-        this.groups.attr("transform", (d, i) => //anon funct def in method chain
-            ('translate(' + Math.floor(this.previousradpos + d.count / this.datae.highestnumber * 60 + 10) /*x*/ + "," + Math.floor(this.ypos_circle) /*y*/ +
-                (() => { //anon funct def in anon funct def
-                    this.previousradpos += (d.count / this.datae.highestnumber * 60 + 10) * 2;
-                    if (this.previousradpos > innerWidth - 70) {
-                        this.ypos_circle += this.longest_rad + d.count / this.datae.highestnumber * 60 + 10
-                        this.longest_rad = 0;
-                        this.previousradpos = 0;
-                    }
-                    if (this.longest_rad == 0) {
-                        this.longest_rad = d.count / this.datae.highestnumber * 60 + 10;
-                    }
-                    return ")"
-                })()
-            )
-        );
-        this.circles
-            .attr("r", (d, i) => (d.count / this.datae.highestnumber) * 60 + 10 + "px")
-            .attr("stroke", "black")
-            .attr("fill", "white");
-        this.lables
-            .attr("dx", d => 0)
-            .attr("dy", d => (d.count / this.datae.highestnumber))
-            .text(d => d.word)
-            .attr("text-anchor", "middle")
-            .style("font", (d, i) => (d.count / this.datae.highestnumber) * 30 + 5 + "px sans-serif");
-    };
+    if (this.datae.isA == "synth_transcript") {
+        this.update = function() {
+            sortarr(this.datae, this.datae.global_refrence + ".words[i].count")
+            this.previousradpos = 0;
+            this.ypos_circle = 70;
+            this.longest_rad = 0;
+            this.groups.attr("transform", (d, i) => //anon funct def in method chain
+                ('translate(' + Math.floor(this.previousradpos + d.count / this.datae.highestnumber * 60 + 10) /*x*/ + "," + Math.floor(this.ypos_circle) /*y*/ +
+                    (() => { //anon funct def in anon funct def
+                        this.previousradpos += (d.count / this.datae.highestnumber * 60 + 10) * 2;
+                        if (this.previousradpos > innerWidth - 70) {
+                            this.ypos_circle += this.longest_rad + d.count / this.datae.highestnumber * 60 + 10
+                            this.longest_rad = 0;
+                            this.previousradpos = 0;
+                        }
+                        if (this.longest_rad == 0) {
+                            this.longest_rad = d.count / this.datae.highestnumber * 60 + 10;
+                        }
+                        return ")"
+                    })()
+                )
+            );
+            this.circles
+                .attr("r", (d, i) => (d.count / this.datae.highestnumber) * 60 + 10 + "px")
+                .attr("stroke", "black")
+                .attr("fill", "white");
+            this.lables
+                .attr("dx", d => 0)
+                .attr("dy", d => (d.count / this.datae.highestnumber))
+                .text(d => d.word)
+                .attr("text-anchor", "middle")
+                .style("font", (d, i) => (d.count / this.datae.highestnumber) * 30 + 5 + "px sans-serif");
+        }
+    } else if (this.datae.isA == "transcript") {
+        this.update = function() {
+            this.previousradpos = 0;
+            this.ypos_circle = 70;
+            this.longest_rad = 0;
+            this.groups.attr("transform", (d, i) => //anon funct def in method chain
+                ('translate(' + Math.floor(this.previousradpos + d.count / this.datae.highestnumber * 60 + 10) /*x*/ + "," + Math.floor(this.ypos_circle) /*y*/ +
+                    (() => { //anon funct def in anon funct def
+                        this.previousradpos += (d.count / this.datae.highestnumber * 60 + 10) * 2;
+                        if (this.previousradpos > innerWidth - 70) {
+                            this.ypos_circle += this.longest_rad + d.count / this.datae.highestnumber * 60 + 10
+                            this.longest_rad = 0;
+                            this.previousradpos = 0;
+                        }
+                        if (this.longest_rad == 0) {
+                            this.longest_rad = d.count / this.datae.highestnumber * 60 + 10;
+                        }
+                        return ")"
+                    })()
+                )
+            );
+            this.circles
+                .attr("r", (d, i) => (d.count / this.datae.highestnumber) * 60 + 10 + "px")
+                .attr("stroke", "black")
+                .attr("fill", "white");
+            this.lables
+                .attr("dx", d => 0)
+                .attr("dy", d => (d.count / this.datae.highestnumber))
+                .text(d => d.word)
+                .attr("text-anchor", "middle")
+                .style("font", (d, i) => (d.count / this.datae.highestnumber) * 30 + 5 + "px sans-serif");
+        }
+    }
 }
 
-function combinetranscripts(transcripts) {
+function combinetranscripts(transcripts, varnamestr) {
     this.words = [];
+    this.global_refrence = varnamestr;
     this.isA = "combined_transcript"
     if (!transcripts.isArray) {
         console.warn(transcripts)
@@ -244,3 +285,31 @@ sortarr(repub_data.words, "repub_data.words[i].count")
 var new_trump_data = {};
 interpet_transcript("data/trumpnewspeech.txt", new_trump_data, 10);
 sortarr(new_trump_data.words, "new_trump_data.words[i].count")
+
+var playback_controlls = function(BubblegraphTranscript,combined_transcript){
+  this.BubblegraphTranscript = BubblegraphTranscript;
+  this.combined_transcript = combined_transcript;
+  this.synth_transcript = synth_transcript;
+  this.js_tracker;
+  this.playback_progress;
+  this.playback_speed;
+  this.play(){
+
+  }
+  this.update(){
+    if(this.playback_progress+this.playback_speed>1){
+      this.playback_progress=1;
+      this.stopPlayback();
+    } else if (this.playback_progress+this.playback_speed<0){
+      this.playback_progress=0;
+      this.stopPlayback();
+    } else {
+      this.playback_progress+=this.playback_speed;
+    }
+    this.synth_transcript = getPointOnCombinedTranscipt(this.)
+    $(".progress-bar").css("width",Math.floor(playback_progress*100)+"px");
+  }
+  this.stopPlayback(){
+
+  }
+}
