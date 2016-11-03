@@ -4,6 +4,7 @@ var width = maxWidth - minWidth;
 var ssv = d3.dsv("", "text/plain");
 var interval_passthrus = [];
 
+
 // Array Remove - By John Resig (MIT Licensed)
 Array.prototype.remove = function(from, to) {
     var rest = this.slice((to || from) + 1 || this.length);
@@ -13,7 +14,7 @@ Array.prototype.remove = function(from, to) {
 
 Array.prototype.isArray = true;
 
-// Math normalize - By Beau Vandenburgh (MIT Licensed)
+// Math normalize - By Beau Vandenburgh
 Math.normalize = function(value, min, max) { //converts range from min - max to 0 - 1
     return (value - min) / (max - min)
 }
@@ -24,10 +25,12 @@ Math.map = function(value, minin, maxin, minout, maxout) { //convers value from 
 
 Math.denormalize = function(value, start, stop) { //converts range from 0 - 1 to start - stop
         return value * (stop - start) + start;
-    }
-    //end
+}
+//end
 
 function TransitioningTranscript(transcripts) {
+    var ThisTT = this;
+    this.transcripts = transcripts
     this.sourcetext = {};
     this.sourcetext.words = [];
     if (!transcripts.isArray) {
@@ -43,8 +46,7 @@ function TransitioningTranscript(transcripts) {
     }
     for (var i = 0; i < transcripts[0].words.length; i++) {
         var matchfound = false;
-        for (var j = 0;
-            ((!matchfound) && (j < transcripts[1].words.length)); j++) {
+        for (var j = 0;((!matchfound) && (j < transcripts[1].words.length)); j++) {
             if (transcripts[0].words[i].word == transcripts[1].words[j].word) {
                 matchfound = true;
                 this.sourcetext.words.push({
@@ -91,7 +93,8 @@ function TransitioningTranscript(transcripts) {
             this.transcript.words[this.transcript.words.length] = {
                 word: this.sourcetext.words[i].word,
                 count: Math.denormalize(time,this.sourcetext.words[i].startcount, this.sourcetext.words[i].endcount),
-                color:this.sourcetext.words[i].color
+                color:this.sourcetext.words[i].color,
+                tooltip:"the frequency (relative to the most common word) of "+this.sourcetext.words[i].word+" went from "+this.sourcetext.words[i].startcount/this.transcripts[0].highestnumber*100+"% to "+this.sourcetext.words[i].endcount/this.transcripts[1].highestnumber*100+"%"
             }
             if (this.transcript.words[this.transcript.words.length - 1].count > this.transcript.highestnumber) {
                 this.transcript.highestnumber = this.transcript.words[this.transcript.words.length - 1].count;
@@ -174,12 +177,17 @@ function Transcript(href, cutoff) {
 }
 
 function BubblegraphTranscript(datae) {
+    this.selectedBubble = 0;
     this.isA = "transcript_graph"
     this.mainDiv = d3.select("body").append("div");
     this.mainDiv.classed("temporary",true)
     $(".temporary").css({ marginTop : "90px"})
     this.mainDiv.classed("temporary",false)
     this.svg = this.mainDiv.append("svg");
+    $( window ).resize(this, function(This) {
+      This.data.svg.style("width", window.innerWidth-30).style("height", window.innerHeight);
+      This.data.update();
+    })
     this.previousradpos = 0;
     this.ypos_circle = 70;
     this.longest_rad = 0;
@@ -211,14 +219,20 @@ function BubblegraphTranscript(datae) {
         this.circles
             .attr("r", (d, i) => (d.count / this.datae.highestnumber) * 60 + 10 + "px")
             .attr("stroke", "black")
-            .attr("fill", (d,i)=>(d.color));
+            .attr("fill", (d,i)=>(d.color))
+            .append("svg:title")
+            .text( (d,i)=>(d.tooltip));
         this.lables
             .attr("dx", d => 0)
             .attr("dy", d => (d.count / this.datae.highestnumber))
             .text(d => d.word)
             .attr("text-anchor", "middle")
-            .style("font", (d, i) => (d.count / this.datae.highestnumber) * 30 + 5 + "px sans-serif");
+            .style("font", (d, i) => (d.count / this.datae.highestnumber) * 30 + 5 + "px sans-serif")
+            .append("svg:title")
+            .text( (d,i)=>(d.tooltip));
     }
+    this.svg.style("width", window.innerWidth-30).style("height", window.innerHeight);
+    this.update();
 }
 
 var playback_controlls = function(transitioningTranscript,bubblegraphTranscript){
@@ -226,29 +240,66 @@ var playback_controlls = function(transitioningTranscript,bubblegraphTranscript)
   this.bubblegraphTranscript = bubblegraphTranscript;
   this.unique_identifier = Math.random()*100000000000000000;
   this.transitioningTranscript = transitioningTranscript;
+  this.isplaying;
   console.log(this.transitioningTranscript)
   this.js_tracker;
   this.playback_progress = 0;
   this.playback_speed = 0.003;
   $(".chart").append(`
-    <div style="padding-top: 0px;padding-right: 0px;padding-bottom: 10px;padding-left: 10px;" class = "col-sm-4 `+this.unique_identifier+`">
+    <div style="padding-top: 0px;padding-right: 0px;padding-bottom: 10px;padding-left: 10px;" class = "col-sm-12 `+this.unique_identifier+`">
       <div class="progress">
-        <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width:0%">
-          Playback Pprogress
+        <div class="progress-bar" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width:0%;transition:none">
+          Playback progress
         </div>
       </div>
-      <button type="button" class="btn btn-success">Play</button>
-      <button type="button" class="btn btn-danger">Stop</button>
+      <div class = btn-group>
+        <button type="button" class="btn btn-info rewind"><<</button>
+        <button type="button" class="btn btn-info slower">Slower</button>
+      </div>
+      <div class = btn-group>
+        <button type="button" class="btn btn-success play">Play</button>
+        <button type="button" class="btn btn-danger stop">Stop</button>
+      </div>
+      <div class = btn-group>
+        <button type="button" class="btn btn-info faster">Faster</button>
+        <button type="button" class="btn btn-info fastfw">>></button>
+      </div>
     </div>
   `);
-  $("."+this.unique_identifier).find(".btn-success").click(this,function(This){
+  $("."+this.unique_identifier).find(".play").click(this,function(This){
     This.data.play();
   });
-  $("."+this.unique_identifier).find(".btn-danger").click(this,function(This){
+  $("."+this.unique_identifier).find(".faster").click(this,function(This){
+    This.data.playback_speed+=0.001;
+    console.info("speed up to: "+This.data.playback_speed)
+  });
+  $("."+this.unique_identifier).find(".slower").click(this,function(This){
+    This.data.playback_speed-=0.001;
+    console.info("slowed to: "+This.data.playback_speed);
+  });
+  $("."+this.unique_identifier).find(".fastfw").click(this,function(This){
+    var pbspeed = This.data.playback_speed;
+    This.data.playback_speed = 0;
+    This.data.playback_progress+=0.1;
+    This.data.update();
+    This.data.playback_speed = pbspeed;
+  });
+  $("."+this.unique_identifier).find(".rewind").click(this,function(This){
+    var pbspeed = This.data.playback_speed;
+    This.data.playback_speed = 0;
+    This.data.playback_progress-=0.1;
+    This.data.update();
+    This.data.playback_speed = pbspeed;
+  });
+  $("."+this.unique_identifier).find(".stop").click(this,function(This){
     This.data.stop();
   });
   this.play = function(){
+    if(this.isplaying){throw "Already Playing"};
+    this.isplaying = true;
+    clearInterval(this.js_tracker);
     this.js_tracker = setInterval(function(This){This.update()},10,this);
+    $("."+this.unique_identifier).find(".progress-bar").toggleClass("progress-bar-striped")
   }
   this.update = function(){
     if(this.playback_progress+this.playback_speed>1){
@@ -266,20 +317,28 @@ var playback_controlls = function(transitioningTranscript,bubblegraphTranscript)
     $(".progress-bar").css("width",Math.floor(this.playback_progress*100)+"%");
   }
   this.stop = function(){
+    if(this.isplaying == false){
+      throw "Already stoped"
+    }
+    this.isplaying = false;
     console.log(this.playback_progress+" + "+this.playback_speed+"="+(this.playback_progress+this.playback_speed))
     clearInterval(this.js_tracker);
+    $("."+this.unique_identifier).find(".progress-bar").toggleClass("progress-bar-striped")
   }
-  $(document).ready(function(){
-    $("."+this.unique_identifier).children(".btn-success").click(function(){
-      this.play();
-    });
-  });
 }
 
 var trump_data = new Transcript("data/other.txt", 10);
 
-var repub_data = new Transcript("data/repub_primary.txt", 10);
+var trumpnewspeech = new Transcript("data/trumpnewspeech.txt", 10);
 
+$(".begin").click(()=>{
+  TT = new TransitioningTranscript([trump_data,trumpnewspeech])
+  TT.update_transcript(0)
+  Graph = new BubblegraphTranscript(TT.transcript)
+  Graph.update();
+  PBctrls = new playback_controlls(TT,Graph)
+  $(".begin").remove();
+});
 
 console.info("foo = new TransitioningTranscript([trump_data,repub_data])")
 console.info("foo.update_transcript()");

@@ -136,7 +136,7 @@ function getPointOnCombinedTranscipt(combined_transcript, time, varnamestr) {
     }
     synth_transcript.global_refrence = varnamestr;
     synth_transcript.highestnumber = highest_value;
-    return synth_transcript;
+    this = synth_transcript;
 }
 
 function BubblegraphTranscript(datae) {
