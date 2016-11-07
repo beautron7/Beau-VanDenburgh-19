@@ -3,7 +3,15 @@ var maxWidth = window.innerWidth - minWidth;
 var width = maxWidth - minWidth;
 var ssv = d3.dsv("", "text/plain");
 var interval_passthrus = [];
-
+var blacklisted_words = [
+  " THAT",
+  " THIS",
+  " IT",
+  " A",
+  " AND",
+  " TO",
+  " OF",
+];
 
 // Array Remove - By John Resig (MIT Licensed)
 Array.prototype.remove = function(from, to) {
@@ -123,6 +131,7 @@ function Transcript(href, cutoff) {
         var actualdata = [];
         for (var i = 0; i < data.length; i++) {
             data[i].speechcontents = data[i].speechcontents.toUpperCase();
+            var skipthisword = false;
             for (var j = 0; j < data[i].speechcontents.length; j++) {
                 if ((data[i].speechcontents.charAt(j) == " ") || (data[i].speechcontents.charAt(j) == ".")) {
                     actualdata[actualdata.length] = " ";
@@ -153,11 +162,23 @@ function Transcript(href, cutoff) {
                 })
             }
         }
+        console.log(this.words)
         for (var i = 0; i < this.words.length; i++) {
-            if (this.words[i].count < cutoff) {
-                this.words.remove(i);
-                i--;
-            } else {}
+          for (var k = 0; k < blacklisted_words.length; k++) {
+            if(i==-1){
+              i=0;
+            }
+            console.log(i)
+            if(this.words[i].word==blacklisted_words[k]){
+              this.words.remove(i);
+              i--;
+              console.log("removed")
+            }
+          }
+          if (this.words[i].count < cutoff) {
+              this.words.remove(i);
+              i--;
+          }
         }
         for (var j = 0; j < this.words.length; j++) {
             for (var i = 0; i < this.words.length - 1; i++) {
@@ -181,7 +202,7 @@ function BubblegraphTranscript(datae) {
     this.isA = "transcript_graph"
     this.mainDiv = d3.select("body").append("div");
     this.mainDiv.classed("temporary",true)
-    $(".temporary").css({ marginTop : "90px"})
+    $(".temporary").css({ marginTop : "120px"})
     this.mainDiv.classed("temporary",false)
     this.svg = this.mainDiv.append("svg");
     $( window ).resize(this, function(This) {
@@ -201,23 +222,23 @@ function BubblegraphTranscript(datae) {
         this.ypos_circle = 70;
         this.longest_rad = 0;
         this.groups.attr("transform", (d, i) => //anon funct def in method chain
-            ('translate(' + Math.floor(this.previousradpos + d.count / this.datae.highestnumber * 60 + 10) /*x*/ + "," + Math.floor(this.ypos_circle) /*y*/ +
+            ('translate(' + Math.floor(this.previousradpos + d.count / this.datae.highestnumber * 100 + 5) /*x*/ + "," + Math.floor(this.ypos_circle) /*y*/ +
                 (() => { //anon funct def in anon funct def
-                    this.previousradpos += (d.count / this.datae.highestnumber * 60 + 10) * 2;
-                    if (this.previousradpos > innerWidth - 70) {
-                        this.ypos_circle += this.longest_rad + d.count / this.datae.highestnumber * 60 + 10
+                    this.previousradpos += (d.count / this.datae.highestnumber * 100 + 5) * 2;
+                    if (this.previousradpos > innerWidth - 100) {
+                        this.ypos_circle += this.longest_rad + d.count / this.datae.highestnumber * 100 + 5
                         this.longest_rad = 0;
                         this.previousradpos = 0;
                     }
                     if (this.longest_rad == 0) {
-                        this.longest_rad = d.count / this.datae.highestnumber * 60 + 10;
+                        this.longest_rad = d.count / this.datae.highestnumber * 100 + 5;
                     }
                     return ")"
                 })()
             )
         );
         this.circles
-            .attr("r", (d, i) => (d.count / this.datae.highestnumber) * 60 + 10 + "px")
+            .attr("r", (d, i) => (d.count / this.datae.highestnumber) * 100 + 5 + "px")
             .attr("stroke", "black")
             .attr("fill", (d,i)=>(d.color))
             .append("svg:title")
@@ -227,7 +248,7 @@ function BubblegraphTranscript(datae) {
             .attr("dy", d => (d.count / this.datae.highestnumber))
             .text(d => d.word)
             .attr("text-anchor", "middle")
-            .style("font", (d, i) => (d.count / this.datae.highestnumber) * 30 + 5 + "px sans-serif")
+            .style("font", (d, i) => (d.count / this.datae.highestnumber) * 50 + 2.5 + "px sans-serif")
             .append("svg:title")
             .text( (d,i)=>(d.tooltip));
     }
@@ -327,9 +348,9 @@ var playback_controlls = function(transitioningTranscript,bubblegraphTranscript)
   }
 }
 
-var trump_data = new Transcript("data/other.txt", 10);
+var trump_data = new Transcript("data/other.txt", 3);
 
-var trumpnewspeech = new Transcript("data/trumpnewspeech.txt", 10);
+var trumpnewspeech = new Transcript("data/trumpnewspeech.txt", 3);
 
 $(".begin").click(()=>{
   TT = new TransitioningTranscript([trump_data,trumpnewspeech])
