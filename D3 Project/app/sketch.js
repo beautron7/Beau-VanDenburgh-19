@@ -30,41 +30,31 @@ Math.denormalize = function(value, start, stop) { //converts range from 0 - 1 to
 function sortarr(arrtosort, index) {
     //sortarr(arr,"arr[i].index")
     //sortarr(arr,"arr[i]")
-    console.log("sorting")
-    console.log(arrtosort.length)
     for (var j = 0; j < arrtosort.length; j++) {
         for (var i = 0; i < arrtosort.length - 1; i++) {
-            if (eval(index) < (() => {
-                    i++;
-                    return eval(index)
-                })()) {
-                console.log("foo")
-                i--
+            if (arrtosort[i][index] < arrtosort[i+1][index]) {
                 var temp;
                 temp = arrtosort[i]
                 arrtosort[i] = arrtosort[i + 1]
                 arrtosort[i + 1] = temp;
-                i++
             }
-            i--;
         }
     }
 }
 
 function interpet_transcript(href, variable, cutoff) {
-    variable.isA = "transcript"
-    var returnData = "foobar";
-    variable.highestnumber = 0
+    variable.isA = "transcript";
+    variable.highestnumber = 0;
     variable.words = [];
-    ssv(href, data => {
+    ssv(href, InputData => { //see line 4 for declaration, ssv is space seperated values
         var actualdata = [];
-        for (var i = 0; i < data.length; i++) {
-            data[i].speechcontents = data[i].speechcontents.toUpperCase();
-            for (var j = 0; j < data[i].speechcontents.length; j++) {
-                if ((data[i].speechcontents.charAt(j) == " ") || (data[i].speechcontents.charAt(j) == ".")) {
+        for (var i = 0; i < InputData.length; i++) {
+            InputData[i].speechcontents = InputData[i].speechcontents.toUpperCase();
+            for (var j = 0; j < InputData[i].speechcontents.length; j++) {
+                if ((InputData[i].speechcontents.charAt(j) == " ") || (InputData[i].speechcontents.charAt(j) == ".")) {
                     actualdata[actualdata.length] = " ";
                 } else {
-                    actualdata[actualdata.length - 1] += data[i].speechcontents.charAt(j);
+                    actualdata[actualdata.length - 1] += InputData[i].speechcontents.charAt(j);
                 }
             }
         }
@@ -139,80 +129,80 @@ function getPointOnCombinedTranscipt(combined_transcript, time, varnamestr) {
     this = synth_transcript;
 }
 
-function BubblegraphTranscript(datae) {
+function BubblegraphTranscript(data) {
     this.isA = "transcript_graph"
     this.svg = d3.select("body").append("svg");
     this.previousradpos = 0;
     this.ypos_circle = 70;
     this.longest_rad = 0;
-    this.datae = datae //to clarify between d3.data() and BubblegraphTranscript.datae,
-    this.groups = this.svg.selectAll("g").data(datae.words).enter().append("g"); //used so that new groups are not appended
+    this.data = data //to clarify between d3.data() and BubblegraphTranscript.data,
+    this.groups = this.svg.selectAll("g").data(data.words).enter().append("g"); //used so that new groups are not appended
     this.circles = this.groups.append("circle"); //used to ensure no new appendings
     this.lables = this.groups.append("text"); //used to ensure no new appendings
-    if (this.datae.isA == "synth_transcript") {
+    if (this.data.isA == "synth_transcript") {
         this.update = function() {
-            sortarr(this.datae, this.datae.global_refrence + ".words[i].count")
+            sortarr(this.data.words, "count")
             this.previousradpos = 0;
             this.ypos_circle = 70;
             this.longest_rad = 0;
             this.groups.attr("transform", (d, i) => //anon funct def in method chain
-                ('translate(' + Math.floor(this.previousradpos + d.count / this.datae.highestnumber * 60 + 10) /*x*/ + "," + Math.floor(this.ypos_circle) /*y*/ +
+                ('translate(' + Math.floor(this.previousradpos + d.count / this.data.highestnumber * 60 + 10) /*x*/ + "," + Math.floor(this.ypos_circle) /*y*/ +
                     (() => { //anon funct def in anon funct def
-                        this.previousradpos += (d.count / this.datae.highestnumber * 60 + 10) * 2;
+                        this.previousradpos += (d.count / this.data.highestnumber * 60 + 10) * 2;
                         if (this.previousradpos > innerWidth - 70) {
-                            this.ypos_circle += this.longest_rad + d.count / this.datae.highestnumber * 60 + 10
+                            this.ypos_circle += this.longest_rad + d.count / this.data.highestnumber * 60 + 10
                             this.longest_rad = 0;
                             this.previousradpos = 0;
                         }
                         if (this.longest_rad == 0) {
-                            this.longest_rad = d.count / this.datae.highestnumber * 60 + 10;
+                            this.longest_rad = d.count / this.data.highestnumber * 60 + 10;
                         }
                         return ")"
                     })()
                 )
             );
             this.circles
-                .attr("r", (d, i) => (d.count / this.datae.highestnumber) * 60 + 10 + "px")
+                .attr("r", (d, i) => (d.count / this.data.highestnumber) * 60 + 10 + "px")
                 .attr("stroke", "black")
                 .attr("fill", "white");
             this.lables
                 .attr("dx", d => 0)
-                .attr("dy", d => (d.count / this.datae.highestnumber))
+                .attr("dy", d => (d.count / this.data.highestnumber))
                 .text(d => d.word)
                 .attr("text-anchor", "middle")
-                .style("font", (d, i) => (d.count / this.datae.highestnumber) * 30 + 5 + "px sans-serif");
+                .style("font", (d, i) => (d.count / this.data.highestnumber) * 30 + 5 + "px sans-serif");
         }
-    } else if (this.datae.isA == "transcript") {
+    } else if (this.data.isA == "transcript") {
         this.update = function() {
             this.previousradpos = 0;
             this.ypos_circle = 70;
             this.longest_rad = 0;
             this.groups.attr("transform", (d, i) => //anon funct def in method chain
-                ('translate(' + Math.floor(this.previousradpos + d.count / this.datae.highestnumber * 60 + 10) /*x*/ + "," + Math.floor(this.ypos_circle) /*y*/ +
+                ('translate(' + Math.floor(this.previousradpos + d.count / this.data.highestnumber * 60 + 10) /*x*/ + "," + Math.floor(this.ypos_circle) /*y*/ +
                     (() => { //anon funct def in anon funct def
-                        this.previousradpos += (d.count / this.datae.highestnumber * 60 + 10) * 2;
+                        this.previousradpos += (d.count / this.data.highestnumber * 60 + 10) * 2;
                         if (this.previousradpos > innerWidth - 70) {
-                            this.ypos_circle += this.longest_rad + d.count / this.datae.highestnumber * 60 + 10
+                            this.ypos_circle += this.longest_rad + d.count / this.data.highestnumber * 60 + 10
                             this.longest_rad = 0;
                             this.previousradpos = 0;
                         }
                         if (this.longest_rad == 0) {
-                            this.longest_rad = d.count / this.datae.highestnumber * 60 + 10;
+                            this.longest_rad = d.count / this.data.highestnumber * 60 + 10;
                         }
                         return ")"
                     })()
                 )
             );
             this.circles
-                .attr("r", (d, i) => (d.count / this.datae.highestnumber) * 60 + 10 + "px")
+                .attr("r", (d, i) => (d.count / this.data.highestnumber) * 60 + 10 + "px")
                 .attr("stroke", "black")
                 .attr("fill", "white");
             this.lables
                 .attr("dx", d => 0)
-                .attr("dy", d => (d.count / this.datae.highestnumber))
+                .attr("dy", d => (d.count / this.data.highestnumber))
                 .text(d => d.word)
                 .attr("text-anchor", "middle")
-                .style("font", (d, i) => (d.count / this.datae.highestnumber) * 30 + 5 + "px sans-serif");
+                .style("font", (d, i) => (d.count / this.data.highestnumber) * 30 + 5 + "px sans-serif");
         }
     }
 }
@@ -272,7 +262,7 @@ function combinetranscripts(transcripts, varnamestr) {
 
 var trump_data = {};
 interpet_transcript("data/other.txt", trump_data, 10);
-sortarr(trump_data.words, "trump_data.words[i].count")
+sortarr(trump_data.words, "count")
 
 // var trump_data_2 = {};
 // interpet_transcript("data/secondary.txt",trump_data_2,10);
@@ -280,11 +270,11 @@ sortarr(trump_data.words, "trump_data.words[i].count")
 
 var repub_data = {};
 interpet_transcript("data/repub_primary.txt", repub_data, 10);
-sortarr(repub_data.words, "repub_data.words[i].count")
+sortarr(repub_data.words, "count")
 
 var new_trump_data = {};
 interpet_transcript("data/trumpnewspeech.txt", new_trump_data, 10);
-sortarr(new_trump_data.words, "new_trump_data.words[i].count")
+sortarr(new_trump_data.words, "count")
 
 var playback_controlls = function(BubblegraphTranscript,combined_transcript){
   this.BubblegraphTranscript = BubblegraphTranscript;
