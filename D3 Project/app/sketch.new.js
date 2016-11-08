@@ -19,8 +19,9 @@ Array.prototype.remove = function(from, to) {
     this.length = from < 0 ? this.length + from : from;
     return this.push.apply(this, rest);
 };
+//end of borrowed code
 
-Array.prototype.isArray = true;
+Array.prototype.isArray = true; //helpfull
 
 // Math normalize - By Beau Vandenburgh
 Math.normalize = function(value, min, max) { //converts range from min - max to 0 - 1
@@ -31,10 +32,10 @@ Math.map = function(value, minin, maxin, minout, maxout) { //convers value from 
     return Math.denormalize(Math.normalize(value, minin, maxin), minout, maxout);
 }
 
-Math.denormalize = function(value, start, stop) { //converts range from 0 - 1 to start - stop
+Math.denormalize = function(value, start, stop) { /*converts range from 0 - 1 to start - stop */
         return value * (stop - start) + start;
 }
-//end
+//end of the code that really helps me that i made
 
 function TransitioningTranscript(transcripts) {
     var ThisTT = this;

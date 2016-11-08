@@ -47,21 +47,21 @@ function interpet_transcript(href, variable, cutoff) {
     variable.highestnumber = 0;
     variable.words = [];
     ssv(href, InputData => { //see line 4 for declaration, ssv is space seperated values
-        var actualdata = [];
+        var temp_data_storage = [];
         for (var i = 0; i < InputData.length; i++) {
             InputData[i].speechcontents = InputData[i].speechcontents.toUpperCase();
             for (var j = 0; j < InputData[i].speechcontents.length; j++) {
                 if ((InputData[i].speechcontents.charAt(j) == " ") || (InputData[i].speechcontents.charAt(j) == ".")) {
-                    actualdata[actualdata.length] = " ";
+                    temp_data_storage[temp_data_storage.length] = " ";
                 } else {
-                    actualdata[actualdata.length - 1] += InputData[i].speechcontents.charAt(j);
+                    temp_data_storage[temp_data_storage.length - 1] += InputData[i].speechcontents.charAt(j);
                 }
             }
         }
-        for (var i = 0; i < actualdata.length; i++) {
+        for (var i = 0; i < temp_data_storage.length; i++) {
             var datawasfound = false; //does data already exist
             for (var j = 0; j < variable.words.length; j++) {
-                if (actualdata[i] == variable.words[j].word) {
+                if (temp_data_storage[i] == variable.words[j].word) {
                     variable.words[j].count++;
                     if (variable.highestnumber < variable.words[j].count) {
                         variable.highestnumber = variable.words[j].count;
@@ -71,21 +71,21 @@ function interpet_transcript(href, variable, cutoff) {
                 }
             }
             if (!datawasfound) {
-                if (actualdata[i] == " ") {
+                if (temp_data_storage[i] == " ") {
                     continue;
                 }
                 variable.words.push({
-                    word: actualdata[i],
+                    word: temp_data_storage[i],
                     count: 1
                 })
             }
         }
-        for (var eye = 0; eye < variable.words.length; eye++) {
-            if (variable.words[eye].count < cutoff) {
-                variable.words.remove(eye);
-                eye--;
+        for (var i = 0; i < variable.words.length; i++) {
+            if (variable.words[i].count < cutoff) {
+                variable.words.remove(i);
+                i--;
             } else {
-                // console.log(variable.words[eye].count)
+                // console.log(variable.words[i].count)
             }
         }
         // console.log("sorting")
@@ -126,7 +126,7 @@ function getPointOnCombinedTranscipt(combined_transcript, time, varnamestr) {
     }
     synth_transcript.global_refrence = varnamestr;
     synth_transcript.highestnumber = highest_value;
-    this = synth_transcript;
+    this = synth_transcript; //
 }
 
 function BubblegraphTranscript(data) {
