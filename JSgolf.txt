@@ -1,0 +1,76 @@
+A ccess (a variable)
+B ool (Bt,Bf) (semicolon implicit)
+C ontinue
+D one (break;)
+E lse
+F unction
+G oto
+H
+I f
+J avascript
+K
+L et (Declare var globally)
+M ark
+N ew
+O fOr lOOp
+P rint
+Q uit
+R eturn
+S tring
+T his. it is implicit
+U ndefined
+V ariable (set value)
+W hile
+X or
+Y
+Z
+; end line, quote, etc.
+(,) args for functions
+[arr,arr,arr;
+{method,method;value,value;
+
+LVfoo;1;;
+  # var foo = 1;
+Vfoo;2;
+  # foo = 2;
+Vfoo;Shello!;;
+  # var foo = "hello!"
+PAfoo;;
+  # console.log(foo)
+PSfoo;;
+  # console.log("foo")
+I1==1;PSfoo;;;EPSbar;;;
+  # if(i==1){console.log("foo");}else{console.log("bar")}
+WAfoo;<10;PAfoo;;
+  # while (foo<10){console.log(foo)}
+PSn;;Mfoo;PSo;;Gfoo;
+  #prints noooooooooooo...
+
+LV
+  myobject
+;
+  NF
+    V
+        .birthday,
+        .method1,
+        .method2
+    ;
+        2001,
+        SValue1;,
+        SValue2;
+    ;
+  ;
+;;
+
+#for(i=0;i<10;loop:
+O
+  i
+;
+  0
+;
+  i<10
+;
+  i+1
+;
+
+;
