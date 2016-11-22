@@ -18,9 +18,9 @@ Math.normalize = function(value, min, max) { //converts range from min - max to 
     return (value - min) / (max - min)
 }
 
-Math.map = function(value, minin, maxin, minout, maxout) { //convers value from range minin,maxin to range minout,maxout
-    return Math.denormalize(Math.normalize(value, minin, maxin), minout, maxout);
-}
+// Math.map = function(value, minin, maxin, minout, maxout) { //convers value from range minin,maxin to range minout,maxout
+//     return Math.denormalize(Math.normalize(value, minin, maxin), minout, maxout);
+// }
 
 Math.denormalize = function(value, start, stop) { //converts range from 0 - 1 to start - stop
         return value * (stop - start) + start;
