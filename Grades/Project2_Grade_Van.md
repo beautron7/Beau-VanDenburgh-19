@@ -15,7 +15,7 @@ At least one instance of the following components must be used (not just declare
 ## Evaluation Criteria
 
 |  Criteria | Comment | Grade (%) |
-|---|---|
+|---|---|---|
 | Meets Requirements  | (see above) | 100% |
 | Correctness  | Once again, incredible work. The complexity and length of code is quite impressive. Excellent work!! So glad you used D3! <br><br>Minor: I'm not sure if you needed to / why you redefined Math.map(). Seems to me that Math.normalize() and denormalize() are redundant if you use the original Math.map(). but maybe I'm missing something.<br><br>Love that you wrote your own sorting algorithm! There is so much to talk about with sorting algorithms.<br><br>Great error checking!<br><br>I could blabber for a while, and I'm not sure you'll even read it! The gist is, you did great work!  |  97%   |
 | Design and Style |  Love the use of Bootstrap!! And the use of D3! Looks so sleek! Maybe just some margins. And move the top circle down a bit so it isn't cropped.<br><br>Since you have some meaty functions/object constructors, it'd be nice to have a solid comment above the function that helps me figure out what it's doing.  | 96% |
