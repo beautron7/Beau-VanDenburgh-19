@@ -18,7 +18,7 @@ At least one instance of the following components must be used (not just declare
 ## Evaluation Criteria
 
 |  Criteria | Comment | Grade (%) |
-|---|---|
+|---|---|---|
 | Meets Requirements  | (see above) | 100 |
 | Correctness  | Incredible!! Get in the habit of using the "this" keyword when referring to the object properties of the same object. Towards the bottom of your code you start to exclusively use the keyword. The "array.push()" method looks like it would come in handy. <br><br> I was also (technically) able to enclose the dots in with towers, which I assume is a bug, but overall this is excellent work! |   97   |
 | Design and Style | I love the modularization of your code- the function names are appropriate and informative. I'm not entirely sure that the best way to structure your code is through a monolithic object (Grid) but you may have a compelling argument for why you chose this route. It seems to me that some of the properties could be pulled out to better organize your data.   | 97 |
