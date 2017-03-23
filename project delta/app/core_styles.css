@@ -7,14 +7,15 @@
   background-attachment: fixed;
 }
 .hat {
-  background: rgba(200, 200, 200, 0.9);
-  margin: 0px;
+  background: rgb(200, 200, 200);
   position: fixed;
-  width:16cm;
+	width: 16cm;
 	max-width: 90%;
   top: 30px;
-  left:50%;
-  margin-left: -8cm;
+	right: 0;
+	left: 0;
+	margin-left: auto;
+	margin-right: auto;
 }
 .sm-hat{
 	background: rgba(200, 200, 200, 0.9);
@@ -52,6 +53,7 @@
   padding-right:3.24cm;
 }
 .single-line{
+	overflow: hidden;
   width:14.6cm;
   height:0.6792cm;
   margin:0;

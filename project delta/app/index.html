@@ -32,17 +32,23 @@
       <div align="center" id="large_menu" class="btn-group-vertical col-sm-3 hidden-xs" style="padding:10px">
           <button type="button" onclick="new_page()" class="btn btn-primary btn-block btn-default">New Page</button>
           <button type="button" onclick="help()" class="btn btn-primary btn-block btn-default">Help</button>
+          <button type="button" onclick="" class="btn btn-primary btn-block btn-default">Formatting</button>
       </div>
       <div align="center" class="col-sm-6 col-xs-12">
         <h1 id="title-box" class="editable" align="center">Title</h1>
       </div>
-      <div align="center" class="btn-group-vertical col-sm-3 col-xs-6" style="padding:10px">
+      <div align="center" class="btn-group-vertical col-sm-3 col-xs-4" style="padding:10px">
         <button type="button" onclick="openFile()" class="btn btn-primary btn-block btn-default">Open</button>
-        <button type="button" onclick="saveFile(()=>{});" class="btn btn-primary btn-block btn-default">Save As</button>
+        <button type="button" onclick="saveAs(()=>{});" class="btn btn-primary btn-block btn-default">Save As</button>
+        <button type="button" onclick="save()" class="quicksave hidden-xs btn btn-primary btn-block btn-default">Save</button>
       </div>
-      <div align="center" id="small_menu" class="btn-group-vertical hidden-sm hidden-lg hidden-md col-xs-6" style="padding:10px">
+      <div align="center" class="btn-group-vertical hidden-sm hidden-lg hidden-md col-xs-4" style="padding:10px">
+        <button type="button" onclick="save()" class="quicksave btn btn-primary btn-block btn-default">Save</button>
         <button type="button" onclick="new_page()" class="btn btn-primary btn-block btn-default">New Page</button>
+      </div>
+      <div align="center" class="btn-group-vertical hidden-sm hidden-lg hidden-md col-xs-4" style="padding:10px">
         <button type="button" onclick="help()" class="btn btn-primary btn-block btn-default">Help</button>
+        <button type="button" onclick="" class="btn btn-primary btn-block btn-default">Formatting</button>
       </div>
     </div>
     </div>
@@ -75,6 +81,7 @@
         var MQ = MathQuill.getInterface(2); // for backcompat
         var mathField = MQ.MathField(mathFieldSpan, {
           spaceBehavesLikeTab: true, // configurable
+          autoCommands: 'pi theta sqrt sum',
           handlers: {
             moveOutOf:function(){
               override_event=true;
@@ -253,6 +260,34 @@
             e.preventDefault();
             return;
           }
+          if(e.ctrlKey){
+            if(e.keyCode==66){//ctrl b
+              e.preventDefault();
+              if (current_line_number !== false ) { //this means that a line is selected
+                if(!current_page.lines[current_line_number].isMQ){
+                  current_page.lines[current_line_number].format.bold.change();
+                }
+              }
+            }
+            if(e.keyCode==73){//ctrl + i
+              if (current_line_number !== false ) { //this means that a line is selected
+                if(!current_page.lines[current_line_number].isMQ){
+                  current_page.lines[current_line_number].format.italics.change();
+                }
+              }
+            }
+            if (e.keyCode==79){//open 15
+              openFile();
+            }
+            if (e.keyCode==83 ) {
+              //save 19
+              if(current_file_path==""){
+                saveAs(()=>{});
+              } else {
+                save();
+              }
+            }
+          }
           if(e.keyCode==37){//left
             if (current_line_number !== false ) { //this means that a line is selected
               var oldline =current_page.lines[current_line_number]
@@ -403,17 +438,9 @@
             console.log("ENTER PRESSED:\n\n\nline:"+current_line_number)
             if (current_line_number !== false ) { //this means that a line is selected
               if(current_page.lines[current_line_number].isMQ){
-                //what does happen if the current line is mq? probably we shoulld just focus on the next line like desmos does
-                if(current_page.lines.length-1==current_line_number){//is this the last line? if so, lets add another
-                  current_page.addline("normal");
-                  current_page.lines[current_page.lines.length-1].span.focus()
-                } else {//ok, lets just focus the next line
-                  if (typeof current_page.lines[current_line_number+1].MQ != undefined) {//mq objects are special.
-                    current_page.lines[current_line_number+1].span.focus()
-                  } else {
-                    current_page.lines[current_line_number+1].MQ.focus()
-                  }
-                }
+                //what does happen if the current line is mq? probably we shoulld just add another mq
+                current_page.injectline('',current_line_number).span.focus();
+                e.which=12;//this is a lazy way of running mathquillify because it's the next if statement
               } else {
                 var orig_line = current_page.lines[current_line_number];
                 var orig_line_num = current_line_number
@@ -427,10 +454,6 @@
                 orig_line.span.empty().text(left_text);
               }
             }
-            //$(this).attr("disabled", "disabled");
-
-
-
           }
           if (e.which == 12){//ctrl + l means mathquillify or demathquillify. this is so long because we have to keep the array ordered
             console.log("M");
@@ -552,7 +575,9 @@
         }
         this.underline  = {
           status:false,
-          change:null,
+          change:function () {
+
+          },
           dom:null,
         }
         this.highlight  = {
@@ -580,6 +605,7 @@
             if(typeof value == "string"){
               value = this.names.indexOf(value);
             }
+            this.status=value
             this.dom.css("background-color",this.values[value])
           }
         }
@@ -599,17 +625,16 @@
           italics:this.italics.status
         })
         if(arguments.length>1){
-          if (typeof arguments[1]==undefined) {
-
+          if (typeof arguments[1]!==undefined) {
+            var params=arguments[1];
+            this.bold.status = !params.bold;
+            this.bold.change();//sets it to the opposite, then changes it
+            this.highlight.change(params.highlight)
+            this.italics.status = !params.italics;
+            this.italics.change();
+            // this.underline.status = !params.underline;
+            // this.underline.change();
           }
-          params=arguments[1];
-          this.bold.status = !params.bold;
-          this.bold.change();//sets it to the opposite, then changes it
-          this.highlight.change(params.highlight)
-          this.italics.status = !params.italics;
-          this.italics.change();
-          // this.underline.status = !params.underline;
-          // this.underline.change();
         }
       }
       function InjectLineAfter(line_x_dom){//this is actually an object constructer. its complicated-- sometimes we need to add a line after a line and other times we don't have any line to add it to.
@@ -715,7 +740,7 @@
       make_editable($(".editable"))
       var save_to_json=()=>{
         var foo = {title_text:$("#title-box").text(),pages:[]}
-        foo.focus={line:current_line_number,page:pages.indexOf(current_page)}
+        // foo.focus={line:current_line_number,page:pages.indexOf(current_page)}
         for (var i = 0; i < pages.length; i++) {
           foo.pages[i]=[];
           for (var j = 0; j < pages[i].lines.length; j++) {
@@ -728,7 +753,7 @@
               foo.pages[i][j]={
                 isMQ:false,
                 text:pages[i].lines[j].span.text(),
-                format:pages[i].lines[j].format.dump()
+                formatting:pages[i].lines[j].format.dump()
               }
             }
           }
@@ -757,15 +782,9 @@
               line.MQ.latex(foo.pages[i][j].text)
             } else {
               line.span.text(foo.pages[i][j].text);
-              line.format=new Formatting(line.dom,foo.pages[i][j].format);
+              line.format=new Formatting(line.dom,foo.pages[i][j].formatting);
             }
           }
-        }
-        var lineToFocus = pages[foo.focus.page].lines[foo.focus.line];
-        if (lineToFocus.isMQ) {
-          lineToFocus.MQ.focus()
-        } else {
-          lineToFocus.span.focus()
         }
       }
     </script>
@@ -779,28 +798,41 @@
 
       ipc.on('string', (event, message) => {
         if (message=="save") {
-          saveFile((success)=>{sendMSG("save_"+success)});
+          saveAs((success)=>{sendMSG("save_"+success)});
         }
-      });
-      ipc.on('recovery_data', (event, payload) => {
-        load_from_json(payload);//if it crashes, recover data
-        sendMSG("recovery_success")//stops the thing from oversending
-        alert("Success!")
       });
       var autosave;
       setTimeout(()=>{
-        auto2save = setInterval(()=>{
+        autosave = setInterval(()=>{
           ipc.send("backup_data",save_to_json())
+          ipc.send('backup_path', current_file_path)
         },20000)
       },10000)//this stops overwriting
       var ping = setInterval(()=>{
         ipc.send("ping",true)
       },3000)
-      function saveFile (callback) {
+      var current_file_path = "";
+      function save (){
+        fs.writeFile(current_file_path, save_to_json(), function (err) {
+          if (err == undefined) {
+            $(".quicksave").addClass("btn-success").removeClass("btn-primary").text("Saved!")
+            setTimeout(()=>{
+              $(".quicksave").removeClass("btn-success").addClass("btn-primary").text("Save")
+            },3000)
+          } else {
+            $(".quicksave").addClass("btn-danger").removeClass("btn-primary").text("ERROR")
+            setTimeout(()=>{
+              $(".quicksave").removeClass("btn-danger").addClass("btn-primary").text("Save")
+            },3000)
+          }
+        });
+      }
+      function saveAs (callback) {
         dialog.showSaveDialog({ filters: [
           { name: 'Notebook', extensions: ['jsonbook'] }
         ]},function (fileName) {
           if (fileName === undefined) return;
+          current_file_path=fileName;
           fs.writeFile(fileName, save_to_json(), function (err) {
             if (err == undefined) {
               alert("The file has been saved")
@@ -817,6 +849,7 @@
           { name: 'Notebook', extensions: ['jsonbook'] }
         ]},function (fileNames) {
           if (fileNames === undefined) return;
+          current_file_path=fileNames[0]
           var fileName = fileNames[0];
           fs.readFile(fileName, 'utf-8', function (err, data) {
             load_from_json(data)

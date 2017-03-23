@@ -2,7 +2,8 @@ const electron=require("electron")
 const {app, BrowserWindow} = require('electron')
 const Menu = electron.Menu
 const fs = require("fs")
-var backup = ""
+var backup = "";
+var backup_path = "";
 var has_saved=false;
 var unhang;
 var latest_backup = new Date;
@@ -12,8 +13,12 @@ let win;
 
 Date.prototype.toTime = function () {
   returnval="";
-  returnval+=(this.getHours()%12)+";"+(this.getMinutes());
-  if (this.getHours>=12) {
+  returnval+=(this.getHours()%12)+";";
+  if (this.getMinutes()<=10) {
+    returnval+=0
+  }
+  returnval+=this.getMinutes()
+  if (this.getHours()>=12) {
     returnval+=" PM"
   } else {
     returnval+=" AM"
@@ -55,12 +60,12 @@ function createWindow(){
         message: 'The application is not responding. Would you like to quit?',
         buttons: ["Wait", 'Quit']
       }
-    }else{
+    } else {
       options = {
         type: 'info',
         title: 'Renderer Process Hanging',
         message: 'The application is not responding. Would you like to save a copy of your data from '+latest_backup.toTime()+'?',
-        buttons: ['Recover', 'Exit',"Cancel"]
+        buttons: ['Save a seperate copy', 'Exit without saving','Overwire last save',"Cancel"]
       }
     }
     require('electron').dialog.showMessageBox(options, function (index) {
@@ -95,6 +100,18 @@ function createWindow(){
         }
       } else if(index === 1){
         has_saved=true;win.close()
+      } else if(index === 2){
+        fs.writeFile(backup_path,backup);
+        var options = {
+          type: 'info',
+          title: 'Info',
+          message: `Your file has been saved in `+backup_path,
+          buttons: ['ok']
+        }
+        require("electron").dialog.showMessageBox(options,()=>{
+          has_saved=true;
+          app.quit();
+        })
       }
     })
   }
@@ -131,6 +148,11 @@ ipc.on('backup_data', function (event, arg) {
   backup=arg;
   latest_backup=new Date
 });
+ipc.on("backup_path",function (event,arg) {
+  backup_path=arg;
+  console.log("Path recieved:"+arg)
+})
+
 
 setTimeout(()=>{
   latest_ping = new Date();
