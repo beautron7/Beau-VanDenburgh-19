@@ -2,7 +2,7 @@
 	font-family: Consolas, monaco, monospace;
 }
 .bamboo {
-  background-image: url('img/bamboo-wood-texture.jpg');
+  background-image: url('assets/img/bamboo-wood-texture.jpg');
   background-repeat: no-repeat;
   background-attachment: fixed;
 }
@@ -44,7 +44,7 @@
   margin: auto;
   margin-top: 0;
   margin-bottom: 1cm;
-  background-image: url('img/paper-lined.png');
+  background-image: url('assets/img/paper-lined.png');
   background-size: 100%;
   width:21cm;
   height:25cm;

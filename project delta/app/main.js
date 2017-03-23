@@ -2,6 +2,8 @@ const electron=require("electron")
 const {app, BrowserWindow} = require('electron')
 const Menu = electron.Menu
 const fs = require("fs")
+const os = require('os')
+const path = require('path')
 var backup = "";
 var backup_path = "";
 var has_saved=false;
@@ -10,6 +12,25 @@ var latest_backup = new Date;
 var latest_ping;
 var ping_validation;
 let win;
+
+const ipc = electron.ipcMain
+const shell = electron.shell
+
+ipc.on('print-to-pdf', function (event) {
+  const pdfPath = path.join(os.tmpdir(), 'print.pdf')
+  const win = BrowserWindow.fromWebContents(event.sender)
+  // Use default printing options
+  win.webContents.printToPDF({}, function (error, data) {
+    if (error) throw error
+    fs.writeFile(pdfPath, data, function (error) {
+      if (error) {
+        throw error
+      }
+      shell.openExternal('file://' + pdfPath)
+      event.sender.send('wrote-pdf', pdfPath)
+    })
+  })
+})
 
 Date.prototype.toTime = function () {
   returnval="";
@@ -132,7 +153,6 @@ app.on('activate', () => {
   }
 })
 
-const ipc = require('electron').ipcMain
 ipc.on('sendMSG', function (event, arg) {
   if (arg=="save_true") {
     console.log("Success!")
