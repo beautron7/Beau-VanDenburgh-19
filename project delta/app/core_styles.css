@@ -11,9 +11,19 @@
   margin: 0px;
   position: fixed;
   width:16cm;
+	max-width: 90%;
   top: 30px;
   left:50%;
   margin-left: -8cm;
+}
+.sm-hat{
+	background: rgba(200, 200, 200, 0.9);
+  margin: 0px;
+  position: fixed;
+	width: 90%;
+  top: 30px;
+  left:50%;
+  margin-left: -45%;
 }
 .mq-editable-field{
   max-width: 100%;

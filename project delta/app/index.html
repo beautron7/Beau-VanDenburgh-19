@@ -28,18 +28,23 @@
     <!-- done with the Loading of ALL THE THINGS! -->
   </head>
   <body class ="bamboo">
-    <div class="hat">
-      <div class="btn-group-vertical col-xs-3" style="padding:10px">
-          <button type="button" onclick="new_page()" class="btn btn-primary btn-block btn-default" id="new_page">New Page</button>
-          <button type="button" onclick="" class="btn btn-primary btn-block btn-default" id="tbd">Help</button>
+    <div class="hat" id="hat">
+      <div align="center" id="large_menu" class="btn-group-vertical col-sm-3 hidden-xs" style="padding:10px">
+          <button type="button" onclick="new_page()" class="btn btn-primary btn-block btn-default">New Page</button>
+          <button type="button" onclick="help()" class="btn btn-primary btn-block btn-default">Help</button>
       </div>
-      <div class="col-xs-6">
-        <h1 class="editable" align="center">Title</h1>
+      <div align="center" class="col-sm-6 col-xs-12">
+        <h1 id="title-box" class="editable" align="center">Title</h1>
       </div>
-      <div class="btn-group-vertical col-xs-3" style="padding:10px">
-          <button type="button" onclick="openFile()" class="btn btn-primary btn-block btn-default" id="openFile">Open</button>
-          <button type="button" onclick="saveFile()" class="btn btn-primary btn-block btn-default" id="saveFile">Save As</button>
+      <div align="center" class="btn-group-vertical col-sm-3 col-xs-6" style="padding:10px">
+        <button type="button" onclick="openFile()" class="btn btn-primary btn-block btn-default">Open</button>
+        <button type="button" onclick="saveFile(()=>{});" class="btn btn-primary btn-block btn-default">Save As</button>
       </div>
+      <div align="center" id="small_menu" class="btn-group-vertical hidden-sm hidden-lg hidden-md col-xs-6" style="padding:10px">
+        <button type="button" onclick="new_page()" class="btn btn-primary btn-block btn-default">New Page</button>
+        <button type="button" onclick="help()" class="btn btn-primary btn-block btn-default">Help</button>
+      </div>
+    </div>
     </div>
     <div class="background"></div>
     <div class="top-spacer"></div>
@@ -443,6 +448,7 @@
                 newline.span.focus()//focus it
               } else {
                 console.log("Q");
+                line.format.clear();
                 // line.dom.addClass("double-line").removeClass("single-line")
                 var text = line.span.text();
                 line.span.text("").attr("contentEditable",false);
@@ -515,6 +521,97 @@
         })
         dom.attr("contentEditable",true)
       }
+      function Formatting(){
+        dom = arguments[0]
+        this.dom        = dom;
+        this.bold       = {
+          status:false,
+          dom:dom,
+          change:function () {
+            if (!this.status) {
+              this.dom.css("font-weight","Bold")
+              this.status=true;
+            } else {
+              this.dom.css("font-weight","")
+              this.status=false;
+            }
+          }
+        }
+        this.italics    = {
+          status:false,
+          dom:dom,
+          change:function () {
+            if (!this.status) {
+              this.dom.css("font-style","italic")
+              this.status=true;
+            } else {
+              this.dom.css("font-style","")
+              this.status=false;
+            }
+          }
+        }
+        this.underline  = {
+          status:false,
+          change:null,
+          dom:null,
+        }
+        this.highlight  = {
+          status:0,
+          dom:dom.find("span"),
+          names:[
+            "none",
+            "red",
+            "orange",
+            "yellow",
+            "green",
+            "cyan",
+            "blue",
+          ],
+          values:[
+            "#FFFFFF",
+            "#FF0000",
+            "#FF8000",
+            "#FFFF00",
+            "#00FF00",
+            "#00FFFF",
+            "#0000FF",
+          ],
+          change:function(value){
+            if(typeof value == "string"){
+              value = this.names.indexOf(value);
+            }
+            this.dom.css("background-color",this.values[value])
+          }
+        }
+        this.clear=()=>{
+          this.bold.status = true;
+          this.bold.change();//sets it to the opposite, then changes it
+          this.highlight.change(0)
+          this.italics.status = true;
+          this.italics.change();
+          this.underline.status = true;
+          this.underline.change();
+        }
+        this.dump=()=>({
+          bold:this.bold.status,
+          highlight:this.highlight.status,
+          underline:this.underline.status,
+          italics:this.italics.status
+        })
+        if(arguments.length>1){
+          if (typeof arguments[1]==undefined) {
+
+          }
+          params=arguments[1];
+          this.bold.status = !params.bold;
+          this.bold.change();//sets it to the opposite, then changes it
+          this.highlight.change(params.highlight)
+          this.italics.status = !params.italics;
+          this.italics.change();
+          // this.underline.status = !params.underline;
+          // this.underline.change();
+        }
+      }
       function InjectLineAfter(line_x_dom){//this is actually an object constructer. its complicated-- sometimes we need to add a line after a line and other times we don't have any line to add it to.
         var tempid = Math.floor(Math.random()*Math.pow(2,16))//ok yes techincally you could have this run simletaneously and get two similar random numberss and have all hell break loose, but this is sufficent
         line_x_dom.after('<div align="left" class="id'+tempid+' single-line"></div>')
@@ -523,6 +620,7 @@
         this.dom.append("<span class='monospace editable id"+tempid+"'></span>")
         this.span=$(".id"+tempid);
         this.span.removeClass("id"+tempid)
+        this.format=new Formatting(this.dom);
         this.isMQ=false;
         make_editable(this.span)
       }
@@ -535,6 +633,7 @@
         this.span=$(".id"+tempid);
         this.span.removeClass("id"+tempid)
         this.isMQ=false;
+        this.format=new Formatting(this.dom);
         make_editable(this.span)
       }
       function Page(){
@@ -615,20 +714,35 @@
       }
       make_editable($(".editable"))
       var save_to_json=()=>{
-        foo = {title:"title",pages:[]}
+        var foo = {title_text:$("#title-box").text(),pages:[]}
+        foo.focus={line:current_line_number,page:pages.indexOf(current_page)}
         for (var i = 0; i < pages.length; i++) {
           foo.pages[i]=[];
           for (var j = 0; j < pages[i].lines.length; j++) {
-            if(pages[i].lines[j].isMQ){foo.pages[i][j]={isMQ:true,text:pages[i].lines[j].MQ.latex()}}
-            else{foo.pages[i][j]={isMQ:false,text:pages[i].lines[j].span.text()}}
+            if(pages[i].lines[j].isMQ){
+              foo.pages[i][j]={
+                isMQ:true,
+                text:pages[i].lines[j].MQ.latex()
+              }
+            } else {
+              foo.pages[i][j]={
+                isMQ:false,
+                text:pages[i].lines[j].span.text(),
+                format:pages[i].lines[j].format.dump()
+              }
+            }
           }
         }
         return JSON.stringify(foo);
+      }
+      var help=()=>{
+        alert("Just type things.\nPress ctrl + L to toggle math mode,\nPress ctrl + N for a new page.\nSave frequently, there isnt a safeguard in place right now.\nYou can rename the title if you click on it.\nThe cursor is tiny","Help")
       }
       var load_from_json=(instring)=>{
         pages=[];
         $("#sheets").empty()
         foo = JSON.parse(instring);
+        $("#title-box").text(foo.title_text)
         for (var i = 0; i < foo.pages.length; i++) {
           new_page();
           current_page=pages[i]
@@ -643,27 +757,57 @@
               line.MQ.latex(foo.pages[i][j].text)
             } else {
               line.span.text(foo.pages[i][j].text);
+              line.format=new Formatting(line.dom,foo.pages[i][j].format);
             }
           }
+        }
+        var lineToFocus = pages[foo.focus.page].lines[foo.focus.line];
+        if (lineToFocus.isMQ) {
+          lineToFocus.MQ.focus()
+        } else {
+          lineToFocus.span.focus()
         }
       }
     </script>
     <script>
       require = window.nodeRequire
-      var remote = window.nodeRequire('electron').remote;
-      var dialog = remote.dialog;
-      var fs = require('fs'); // require only if you don't already have it
-      function saveFile () {
+      var   remote          =  require('electron').remote;
+      var   dialog          =  remote.dialog;
+      var   fs              =  require('fs'); // require only if you don't already have it
+      const ipc             =  require('electron').ipcRenderer
+      var   sendMSG=(thing) => {ipc.send('sendMSG', thing)}
+
+      ipc.on('string', (event, message) => {
+        if (message=="save") {
+          saveFile((success)=>{sendMSG("save_"+success)});
+        }
+      });
+      ipc.on('recovery_data', (event, payload) => {
+        load_from_json(payload);//if it crashes, recover data
+        sendMSG("recovery_success")//stops the thing from oversending
+        alert("Success!")
+      });
+      var autosave;
+      setTimeout(()=>{
+        auto2save = setInterval(()=>{
+          ipc.send("backup_data",save_to_json())
+        },20000)
+      },10000)//this stops overwriting
+      var ping = setInterval(()=>{
+        ipc.send("ping",true)
+      },3000)
+      function saveFile (callback) {
         dialog.showSaveDialog({ filters: [
           { name: 'Notebook', extensions: ['jsonbook'] }
         ]},function (fileName) {
           if (fileName === undefined) return;
           fs.writeFile(fileName, save_to_json(), function (err) {
             if (err == undefined) {
-              dialog.showMessageBox({ message: "The file has been saved! :-)",
-              buttons: ["OK"] });
+              alert("The file has been saved")
+              callback(true);
             } else {
-              dialog.showErrorBox("File Save Error", err.message);
+              alert(err.message,"File Save Error");
+              callback(false);
             }
           });
         });
