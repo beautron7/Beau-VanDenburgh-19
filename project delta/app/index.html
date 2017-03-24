@@ -62,6 +62,8 @@
           "single-line",
           "double-line",
           "triple-line",
+          "quad-line",
+          "five-line"
         ]
         var oldsize = 0;
         for (var i = 0; i < sizes.length; i++) {
@@ -70,9 +72,19 @@
           }
         }
         if(change_up){
-          dom.removeClass(sizes[oldsize]).addClass(sizes[oldsize+1])
+          if(oldsize==sizes.length-1){
+            //welp
+          } else {
+            dom.removeClass(sizes[oldsize]).addClass(sizes[oldsize+1])
+            return oldsize+1;
+          }
         } else {
-          dom.removeClass(sizes[oldsize]).addClass(sizes[oldsize-1])
+          if(oldsize==0){
+            //welp
+          } else {
+            dom.removeClass(sizes[oldsize]).addClass(sizes[oldsize-1])
+            return oldsize-1;
+          }
         }
       }
       var mathquillify =(selector)=> {//mathqill is a library that makes typing math easy. mathquillify converts a line of text into a mathquill field.
@@ -166,41 +178,39 @@
             edit: function() { // useful event handlers
               var div_container = selector.parent()
               var mathquill_block = selector.find(".mq-root-block")
-              var adjust_font=()=>{
-                if(selector.find(".mq-root-block").height()<div_container.height()){
-                  for (var i = 0; i < 25; i++) {
-                    if(mathquill_block.height()<div_container.height()){
-                      var fontSize = parseInt(selector.css("font-size"));
-                      fontSize = fontSize + 1 + "px";
-                      selector.css({'font-size':fontSize});
-                    }
+              var get_font_size=function () {
+                return parseInt(selector.css("font-size"));
+              }
+              var adjust_font_to_fit=()=>{
+                if(mathquill_block.height()<div_container.height()){
+                  while(mathquill_block.height()<div_container.height()){
+                    var fontSize = get_font_size()
+                    if(fontSize>50)break;
+                    fontSize = fontSize + 1 + "px";
+                    selector.css({'font-size':fontSize});
                   }
-                }
-                if(mathquill_block.height()>div_container.height()){
-                  for (var i = 0; i < 25; i++) {
-                    if(mathquill_block.height()>div_container.height()){
-                      var fontSize = parseInt(selector.css("font-size"));
-                      fontSize = fontSize - 1 + "px";
-                      selector.css({'font-size':fontSize});
-                    }
+                } else {
+                  while(mathquill_block.height()>div_container.height()){
+                    var fontSize = get_font_size();
+                    fontSize = fontSize - 1 + "px";
+                    selector.css({'font-size':fontSize});
                   }
+                  var fontSize = get_font_size()+1+"px"
+                  selector.css({'font-size':fontSize});
                 }
               }
-              fitDiv =(i)=>{
-                if (i > 3) return false; //stops infinite loop
-                var fontSize = parseInt(selector.css("font-size"));
-                if (fontSize < 18) {
-                  change_div_size(div_container,true);//auto-grow
-                  adjust_font();
-                  fitDiv(i+1);
-                } else if (fontSize > 35){
-                  change_div_size(div_container,false);//auto shrink
-                  adjust_font();
-                  fitDiv(i+1);
-                }
+              var go_up=function () {
+                console.log("UP: new size:"+change_div_size(div_container,true));//auto-grow
+                adjust_font_to_fit();
               }
-              adjust_font();
-              fitDiv()
+              var go_down=function () {
+                console.log("DN: new size:"+change_div_size(div_container,false));//auto-shrink
+                adjust_font_to_fit();
+              }
+              adjust_font_to_fit();
+              while (get_font_size() < 18) go_up();
+              go_up();
+              while (get_font_size() > 35) go_down();
             }
           }
         });
@@ -294,12 +304,14 @@
               }
             }
             if(formatted){
-              line = current_page.lines[current_line_number]
-              if (line.isMQ) {
-                //its ok
-              } else {
-                if(line.span.children().length>0){
-                  line.span.html(line.span.html().replace(/<\/?\w+((\s+\w+(\s*=\s*(?:".*?"|'.*?'|[\^'">\s]+))?)+\s*|\s*)\/?>/g,""))
+              if(current_line_number!==false){
+                line = current_page.lines[current_line_number];
+                if (line.isMQ) {
+                  //its ok
+                } else {
+                  if(line.span.children().length>0){
+                    line.span.html(line.span.html().replace(/<\/?\w+((\s+\w+(\s*=\s*(?:".*?"|'.*?'|[\^'">\s]+))?)+\s*|\s*)\/?>/g,""))
+                  }
                 }
               }
             }

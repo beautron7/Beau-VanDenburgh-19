@@ -45,5 +45,6 @@ A way to take notes (and type math) built off of electron, bootstrap, jQuery, Ma
 -  `Ctrl+S`: Save, or save as
 -  `Ctrl+K`: Toggle font size between 1 line and 2 lines (for text)
 
+
 #### Footnotes
 - \*There isn't a key-bind for highlighting yet

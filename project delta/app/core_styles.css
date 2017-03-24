@@ -6,6 +6,7 @@
   background-repeat: no-repeat;
   background-attachment: fixed;
 }
+/*0.694*/
 .hat {
   background: rgba(200, 200, 200,0.9);
   position: fixed;
@@ -84,6 +85,29 @@
   border-bottom-style: solid;
   border-bottom-color: rgba(0,0,255,0.9);
   border-bottom-width: 0.03cm
+}
+}
+.quad-line{
+  width:14.6cm;
+  height:2.720cm;
+  margin:0;
+  background-color: rgba(255,255,255,0.9);
+  font-size: 40px;
+
+  border-bottom-style: solid;
+  border-bottom-color: rgba(0,0,255,0.9);
+  border-bottom-width: 0.03cm
+}
+.five-line{
+	width:14.6cm;
+	height:3.4cm;
+	margin:0;
+	background-color: rgba(255,255,255,0.9);
+	font-size: 40px;
+
+	border-bottom-style: solid;
+	border-bottom-color: rgba(0,0,255,0.9);
+	border-bottom-width: 0.03cm
 }
 .top-spacer{
   margin:3cm;
