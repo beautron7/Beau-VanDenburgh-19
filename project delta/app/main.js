@@ -78,21 +78,21 @@ function createWindow(){
       options = {
         type: 'info',
         title: 'Renderer Process Hanging',
-        message: 'The application is not responding. Would you like to quit?',
+        message: 'The application is not responding (or you opened the help menu). Would you like to quit?',
         buttons: ["Wait", 'Quit']
       }
     } else {
       options = {
         type: 'info',
         title: 'Renderer Process Hanging',
-        message: 'The application is not responding. Would you like to save a copy of your data from '+latest_backup.toTime()+'?',
+        message: 'The application is not responding (or you opened the help menu). Would you like to save a copy of your data from '+latest_backup.toTime()+'?',
         buttons: ['Save a seperate copy', 'Exit without saving','Overwire last save',"Cancel"]
       }
     }
     require('electron').dialog.showMessageBox(options, function (index) {
-      if (index === 0) {
+      if (index === 0) {//wait, save a seperate copy
         if (backup=="") {
-          //Cancel
+          setTimeout(re_arm,10000)//well, we do want to give them the option
         } else {//ok, we need to recover their file
           var fname
           try {
@@ -133,6 +133,9 @@ function createWindow(){
           has_saved=true;
           app.quit();
         })
+      } else if (index==3){
+        //ok, well lets rearm the system
+        setTimeout(re_arm,10000);
       }
     })
   }
@@ -173,17 +176,17 @@ ipc.on("backup_path",function (event,arg) {
   console.log("Path recieved:"+arg)
 })
 
-
-setTimeout(()=>{
-  latest_ping = new Date();
-  var max_delay = 7000
-  ping_validation = setInterval(()=>{
-    if(new Date - latest_ping > max_delay){
-      clearInterval(ping_validation);
-      unhang();
-    }
-  },5000)
-},5000)
+var re_arm=function () {
+    latest_ping = new Date();
+    var max_delay = 7000
+    ping_validation = setInterval(()=>{
+      if(new Date - latest_ping > max_delay){
+        clearInterval(ping_validation);
+        unhang();
+      }
+    },5000)
+}
+setTimeout(re_arm,5000)
 
 ipc.on("ping",()=>{
   latest_ping = new Date();

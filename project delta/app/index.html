@@ -24,7 +24,7 @@
     <link rel="stylesheet" href="assets/mathquill-0.10.1/mathquill.css"></script>
     <script src="assets/mathquill-0.10.1/mathquill.min.js"></script>
     <link rel="stylesheet" type="text/css" href="core_styles.css">
-
+    <link rel="stylesheet" href="print.css">
     <!-- done with the Loading of ALL THE THINGS! -->
   </head>
   <body class ="bamboo">
@@ -266,6 +266,8 @@
             return;
           }
           if(e.ctrlKey){
+            formatted=true;
+            console.log(e.keyCode)
             if(e.keyCode==66){//ctrl b
               e.preventDefault();
               if (current_line_number !== false ) { //this means that a line is selected
@@ -273,24 +275,36 @@
                   current_page.lines[current_line_number].format.bold.change();
                 }
               }
-            }
-            if(e.keyCode==73){//ctrl + i
+            } else if(e.keyCode==73){//ctrl + i
               if (current_line_number !== false ) { //this means that a line is selected
                 if(!current_page.lines[current_line_number].isMQ){
                   current_page.lines[current_line_number].format.italics.change();
                 }
               }
+            } else {
+              formatted=false;
+              if (e.keyCode==83) {//save
+                if(current_file_path==""){
+                  saveAs(()=>{});
+                } else {
+                  save();
+                }
+              } else if (e.keyCode==80){//print
+                $(".print-pdf").trigger("click")
+              }
+            }
+            if(formatted){
+              line = current_page.lines[current_line_number]
+              if (line.isMQ) {
+                //its ok
+              } else {
+                if(line.span.children().length>0){
+                  line.span.html(line.span.html().replace(/<\/?\w+((\s+\w+(\s*=\s*(?:".*?"|'.*?'|[\^'">\s]+))?)+\s*|\s*)\/?>/g,""))
+                }
+              }
             }
             if (e.keyCode==79){//open 15
               openFile();
-            }
-            if (e.keyCode==83 ) {
-              //save 19
-              if(current_file_path==""){
-                saveAs(()=>{});
-              } else {
-                save();
-              }
             }
           }
           if(e.keyCode==37){//left
@@ -773,7 +787,7 @@
         return JSON.stringify(foo);
       }
       var help=()=>{
-        alert("Just type things.\nPress ctrl + L to toggle math mode,\nPress ctrl + N for a new page.\nSave frequently, there isnt a safeguard in place right now.\nYou can rename the title if you click on it.\nThe cursor is tiny","Help")
+        alert("Just type things.\nPress ctrl + L to toggle math mode,\nPress ctrl + N for a new page.\nCtrl + B(old), Ctrl + I(talics) to format a line of text\nCtrl + K makes a large line\nYou can rename the title if you click on it.","Help")
       }
       var load_from_json=(instring)=>{
         pages=[];
@@ -817,7 +831,6 @@
           setTimeout(()=>{
             $('.print-pdf').text("Print").removeClass("btn-success").addClass("btn-primary");
           },3000)
-          console.log("foo!")
         })
         ipc.on('string', (event, message) => {
           if (message=="save") {
@@ -845,10 +858,14 @@
               $(".quicksave").removeClass("btn-success").addClass("btn-primary").text("Save")
             },3000)
           } else {
-            $(".quicksave").addClass("btn-danger").removeClass("btn-primary").text("ERROR")
-            setTimeout(()=>{
-              $(".quicksave").removeClass("btn-danger").addClass("btn-primary").text("Save")
-            },3000)
+            if (current_file_path=="") {
+              saveAs()
+            } else {
+              var button = $(".quicksave").addClass("btn-danger").removeClass("btn-primary").text("ERROR")
+              setTimeout(()=>{
+                $(".quicksave").removeClass("btn-danger").addClass("btn-primary").text("Save")
+              },3000);
+            }
           }
         });
       }
