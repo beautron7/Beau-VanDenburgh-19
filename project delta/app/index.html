@@ -9,7 +9,7 @@
 
   this is a long term project and i don't periodically
   clean up old code, so some stuff may actually be useless
-  It's bad practice, but i would rather it work.
+  It's a bad practice, but i would rather it work.
  -->
 <!DOCTYPE html>
 <html>
@@ -56,8 +56,20 @@
     <div class="top-spacer"></div>
     <div id="sheets"></div>
     <script>
+      var mathquillAutoFormatTimeoutId = {pid:0};
+      var mqaftoid = mathquillAutoFormatTimeoutId;
+      /*
+        basically, to stop mathquill from repeatedly trying to format, it will
+        settimeout for the formatting operation, and will wait for the user
+        to stop typing by canceling the pending operation whenever a new one is
+        sceduled. think of it like waiting 5 minutes after you get an order
+        of piza to make sure no other orders are coming in so you dont deliver
+        each pizza individually
+
+        the weird acronym is used becasue that variablename is long
+      */
       var override_event = false;
-      var change_div_size =(dom,change_up)=>{//there are different div sizes and this function allows for easy expansion
+      var get_div_size=(dom)=>{
         var sizes = [
           "single-line",
           "double-line",
@@ -65,12 +77,60 @@
           "quad-line",
           "five-line"
         ]
-        var oldsize = 0;
+        var oldsize = false;
         for (var i = 0; i < sizes.length; i++) {
           if(dom.hasClass(sizes[i])){
             oldsize=i;
           }
         }
+        return oldsize;
+      }
+      var auto_adjust_mathquill =(selector)=>{
+        var div_container = selector.parent()
+        var mathquill_block = selector.find(".mq-root-block")
+        var get_font_size=function () {
+          return parseInt(selector.css("font-size"));
+        }
+        var adjust_font_to_fit=()=>{
+          if(mathquill_block.height()<div_container.height()){
+            while(mathquill_block.height()<div_container.height()){
+              var fontSize = get_font_size()
+              if(fontSize>50)break;
+              fontSize = fontSize + 1 + "px";
+              selector.css({'font-size':fontSize});
+            }
+          } else {
+            while(mathquill_block.height()>div_container.height()){
+              var fontSize = get_font_size();
+              fontSize = fontSize - 1 + "px";
+              selector.css({'font-size':fontSize});
+            }
+            var fontSize = get_font_size()+1+"px"
+            selector.css({'font-size':fontSize});
+          }
+        }
+        var go_up=function () {
+          change_div_size(div_container,true);//auto-grow
+          adjust_font_to_fit();
+        }
+        var go_down=function () {
+          console.log("DN: new size:"+change_div_size(div_container,false));//auto-shrink
+          adjust_font_to_fit();
+        }
+        adjust_font_to_fit();
+        while (get_font_size() < 18) go_up();
+        go_up();
+        while (get_font_size()*(1+(get_div_size(div_container)*0.05)) > 35) go_down();
+      }
+      var change_div_size =(dom,change_up)=>{//there are different div sizes and this function allows for easy expansion
+        oldsize=get_div_size(dom)
+        var sizes = [
+          "single-line",
+          "double-line",
+          "triple-line",
+          "quad-line",
+          "five-line"
+        ]
         if(change_up){
           if(oldsize==sizes.length-1){
             //welp
@@ -176,41 +236,10 @@
               }
             },
             edit: function() { // useful event handlers
-              var div_container = selector.parent()
-              var mathquill_block = selector.find(".mq-root-block")
-              var get_font_size=function () {
-                return parseInt(selector.css("font-size"));
-              }
-              var adjust_font_to_fit=()=>{
-                if(mathquill_block.height()<div_container.height()){
-                  while(mathquill_block.height()<div_container.height()){
-                    var fontSize = get_font_size()
-                    if(fontSize>50)break;
-                    fontSize = fontSize + 1 + "px";
-                    selector.css({'font-size':fontSize});
-                  }
-                } else {
-                  while(mathquill_block.height()>div_container.height()){
-                    var fontSize = get_font_size();
-                    fontSize = fontSize - 1 + "px";
-                    selector.css({'font-size':fontSize});
-                  }
-                  var fontSize = get_font_size()+1+"px"
-                  selector.css({'font-size':fontSize});
-                }
-              }
-              var go_up=function () {
-                console.log("UP: new size:"+change_div_size(div_container,true));//auto-grow
-                adjust_font_to_fit();
-              }
-              var go_down=function () {
-                console.log("DN: new size:"+change_div_size(div_container,false));//auto-shrink
-                adjust_font_to_fit();
-              }
-              adjust_font_to_fit();
-              while (get_font_size() < 18) go_up();
-              go_up();
-              while (get_font_size() > 35) go_down();
+              clearTimeout(mathquillAutoFormatTimeoutId.pid)//stops any pending operatoins. this saves on cpu cycles
+              mathquillAutoFormatTimeoutId.pid=setTimeout(()=>{
+                auto_adjust_mathquill(selector)
+              },100)
             }
           }
         });
@@ -311,6 +340,7 @@
                 } else {
                   if(line.span.children().length>0){
                     line.span.html(line.span.html().replace(/<\/?\w+((\s+\w+(\s*=\s*(?:".*?"|'.*?'|[\^'">\s]+))?)+\s*|\s*)\/?>/g,""))
+                    //this matches any html tag and removes it. this stops any browser formatting
                   }
                 }
               }
@@ -349,12 +379,19 @@
                   if(current_line_number!=current_page.lines.length-1){//cant delete end of line
                     var next_line = current_page.lines[current_line_number+1];
                     if (next_line.isMQ) {
-                      //TBD
+                      if (line.span.text().length==0){
+                        e.preventDefault();
+                        current_page.lines.splice(current_line_number,1);//now remove this line
+                        line.span.remove();
+                        line.dom.remove();
+                        next_line.MQ.focus();
+                      }
                     } else {
                       current_page.lines.splice(current_line_number+1,1);//now remove old line
                       var next_line_text = next_line.span.text()
                       var self_text = line.span.text()
-                      line.span.text(self_text+"@"+next_line_text);//add this lines text to the last line. the extra char is because we don't want to override the deleting action
+                      e.preventDefault();
+                      line.span.text(self_text+next_line_text);//add this lines text to the last line. the extra char is because we don't want to override the deleting action
                       next_line.span.remove();//delete it from doc
                       next_line.dom.remove();
                       setCaretPosition(line.span[0],self_text.length)
@@ -573,7 +610,7 @@
         dom.attr("contentEditable",true)
       }
       function Formatting(){
-        dom = arguments[0]
+        dom = arguments[0]//we must bind the formatting to an element
         this.dom        = dom;
         this.bold       = {
           status:false,
