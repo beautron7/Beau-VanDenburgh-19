@@ -13,28 +13,37 @@
     <!-- <script src="libraries/p5.sound.js" type="text/javascript"></script> -->
     <!-- <script src="sketch.js" type="text/javascript"></script> -->
     <!-- <style> body {padding: 0; margin: 0;} canvas {vertical-align: top;} </style> -->
+    <style>
+      b{
+        font-size: 20px;
+      }
+    </style>
   </head>
   <body>
-    <div class="digits">
-      <h1 align="center">0:00</h1>
-    </div>
-    <div class="times">
-      <div class="col-xs-6">
-        <div class="btn-group-vertical col-xs-12">
-          <button type="button" class="btn-block btn btn-primary">AC</button>
-          <button type="button" class="btn-block btn btn-primary">1AR</button>
-          <button type="button" class="btn-block btn btn-primary">2AR</button>
-          <button type="button" class="btn-block btn btn-success">Prep ()</button>
-        </div><br><br>
-      </div>
-      <div class="col-xs-6">
-        <div class="btn-group-vertical col-xs-12">
-          <button type="button" class="btn-block btn btn-primary">NC</button>
-          <button type="button" class="btn-block btn btn-primary">NR</button>
-          <button type="button" class="btn-block btn">CX</button>
-          <button type="button" class="btn-block btn btn-danger">Prep ()</button>
-        </div><br><br>
-      </div>
-    </div>
+    <div contenteditable class="col-sm-12"style=
+    "overflow: auto; border: solid gray 1px;  "
+    id=card>Type the card here</div>
+    <button onclick="clip()"class="btn btn-block btn-primary" style="">Clip card</button>
+    <textarea id="text" class="col-sm-12" style="width:100%" rows="4" cols="50">Type what you want the card to say.</textarea>
+    <script>
+    function clip() {
+      $("#card").html($("#card").html().replace(/<\/?\w+((\s+\w+(\s*=\s*(?:".*?"|'.*?'|[\^'">\s]+))?)+\s*|\s*)\/?>/g,""))
+
+      original_text=$("#card").html()
+      new_text=$("#text").val()
+      function remove_first_letter() {
+        new_text=new_text.slice(1);
+        console.log(new_text)
+      }
+      for (var i = 0; i < original_text.length; i++) {
+        if((original_text[i]+"").toUpperCase()==(new_text[0]+"").toUpperCase()){
+          original_text=original_text.slice(0,i)+"<b>"+new_text[0]+"</b>"+original_text.slice(i+1);
+          i+=10
+          remove_first_letter()
+        }
+      }
+      $("#card").html(original_text).css("font-size","6px")
+    }
+    </script>
   </body>
 </html>
