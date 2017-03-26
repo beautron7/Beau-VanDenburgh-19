@@ -523,6 +523,7 @@
             }
           }
           if (e.which == 12){//ctrl + l means mathquillify or demathquillify. this is so long because we have to keep the array ordered
+            e.preventDefault()
             console.log("M");
             if (current_line_number !== false ) {
               var line = current_page.lines[current_line_number];

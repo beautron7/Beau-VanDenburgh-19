@@ -17,14 +17,27 @@
       b{
         font-size: 20px;
       }
+      #card{
+        overflow: auto;
+        border: solid gray 1px;
+      }
+      .bottom-div{
+        position:fixed;
+        bottom:0px;
+        width: 100%
+      }
+      #text{
+        width:100%;
+        margin: auto;
+      }
     </style>
   </head>
   <body>
-    <div contenteditable class="col-sm-12"style=
-    "overflow: auto; border: solid gray 1px;  "
-    id=card>Type the card here</div>
-    <button onclick="clip()"class="btn btn-block btn-primary" style="">Clip card</button>
-    <textarea id="text" class="col-sm-12" style="width:100%" rows="4" cols="50">Type what you want the card to say.</textarea>
+    <div contenteditable class="col-sm-12" id=card>Type the card here</div>
+    <div class="bottom-div">
+      <button onclick="clip()"class="btn btn-block btn-primary">Clip card</button>
+      <textarea id="text" class="col-sm-12" rows="4" cols="50">Type what you want the card to say.</textarea>
+    </div>
     <script>
     function clip() {
       $("#card").html($("#card").html().replace(/<\/?\w+((\s+\w+(\s*=\s*(?:".*?"|'.*?'|[\^'">\s]+))?)+\s*|\s*)\/?>/g,""))
@@ -38,12 +51,13 @@
       for (var i = 0; i < original_text.length; i++) {
         if((original_text[i]+"").toUpperCase()==(new_text[0]+"").toUpperCase()){
           original_text=original_text.slice(0,i)+"<b>"+new_text[0]+"</b>"+original_text.slice(i+1);
-          i+=10
+          i+=7
           remove_first_letter()
         }
       }
       $("#card").html(original_text).css("font-size","6px")
     }
+    $("#text").bind('input propertychange',clip)
     </script>
   </body>
 </html>
