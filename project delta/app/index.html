@@ -17,7 +17,13 @@
     <meta charset="UTF-8">
     <title>Template</title>
     <!-- Load ALL THE THINGS! -->
-    <script>window.nodeRequire = require; delete window.require; delete window.exports; delete window.module;</script>
+    <script>
+    const ipc = require('electron').ipcRenderer
+    window.nodeRequire = require;
+    delete window.require;
+    delete window.exports;
+    delete window.module;
+    </script>
     <script src="assets/jquery/dist/jquery.min.js" type="text/javascript"></script>
     <link rel="stylesheet" href="assets/bootstrap-3.3.7-dist/css/bootstrap.css"></script>
     <script src="assets/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
@@ -67,6 +73,7 @@
         each pizza individually
 
         the weird acronym is used becasue that variablename is long
+
       */
       var override_event = false;
       var get_div_size=(dom)=>{
@@ -147,7 +154,11 @@
           }
         }
       }
-      var mathquillify =(selector)=> {//mathqill is a library that makes typing math easy. mathquillify converts a line of text into a mathquill field.
+      var mathquillify =(selector)=> {
+        /*
+          mathqill is a library that makes typing math easy. mathquillify
+          converts a line of text into a mathquill field.
+        */
         selector.removeClass("monospace")
         var mathFieldSpan = selector[0]
         var MQ = MathQuill.getInterface(2); // for backcompat
@@ -158,9 +169,9 @@
             moveOutOf:function(){
               override_event=true;
               if(arguments[0]==-1){
-                if (current_line_number !== false ) { //this means that a line is selected. this sould work under all circumstances
+                if (current_line_number !== false ) { //this means that a line is selected. there is no situation where this should trigger, but its better to be safe then sorry
                   if(current_line_number==0){//first line
-                    //TBD
+                    //If we are on the first line and try to move to the previous, what should happen? TBD.
                   } else {//anything else
                     var newline =current_page.lines[current_line_number-1];
                     if(newline.isMQ){
@@ -499,7 +510,12 @@
             }
           }
         })
-        $("body").on('keypress', function (e) {//we use two differetnt types of binding because keypress is generally better but we cant overide backspace with it
+        $("body").on('keypress', function (e) {
+          /*
+            we use two differetnt types of binding because
+            keypress is generally better than the alternative but you
+             cant overide backspace with it
+          */
           if(e.which === 13 && !e.ctrlKey /*enter*/ ){
             event.preventDefault()
             console.log("ENTER PRESSED:\n\n\nline:"+current_line_number)
@@ -524,7 +540,7 @@
           }
           if (e.which == 12){//ctrl + l means mathquillify or demathquillify. this is so long because we have to keep the array ordered
             e.preventDefault()
-            console.log("M");
+            console.log("M");//this means it was pressed. this is usefull for debugging.
             if (current_line_number !== false ) {
               var line = current_page.lines[current_line_number];
               if (line.isMQ) {
@@ -538,7 +554,7 @@
                 newline.span.text(text);//give it correct text
                 newline.span.focus()//focus it
               } else {
-                console.log("Q");
+                console.log("Q");//this is used to detect focus problems
                 line.format.clear();
                 // line.dom.addClass("double-line").removeClass("single-line")
                 var text = line.span.text();
@@ -870,7 +886,6 @@
       var   remote          =  require('electron').remote;
       var   dialog          =  remote.dialog;
       var   fs              =  require('fs'); // require only if you don't already have it
-      const ipc             =  require('electron').ipcRenderer
       var   sendMSG=(thing) => {ipc.send('sendMSG', thing)}
       {
         const printPDFBtn   =  $('.print-pdf')
@@ -928,6 +943,7 @@
           current_file_path=fileName;
           fs.writeFile(fileName, save_to_json(), function (err) {
             if (err == undefined) {
+              ipc.send('backup_path', current_file_path)
               alert("The file has been saved")
               callback(true);
             } else {
@@ -946,6 +962,7 @@
           var fileName = fileNames[0];
           fs.readFile(fileName, 'utf-8', function (err, data) {
             load_from_json(data)
+            ipc.send('backup_path', current_file_path)
           });
         });
       }

@@ -171,9 +171,12 @@ ipc.on('backup_data', function (event, arg) {
   backup=arg;
   latest_backup=new Date
 });
+
 ipc.on("backup_path",function (event,arg) {
   backup_path=arg;
   console.log("Path recieved:"+arg)
+  paths=arg.match(/(^.+(\\|\/))(.+$)/)
+  win.setTitle(paths[3]+" --- "+paths[1]+" --- Project Delta")
 })
 
 var re_arm=function () {
