@@ -44,7 +44,7 @@
         <h1 id="title-box" class="editable" align="center">Title</h1>
       </div>
       <div align="center" class="btn-group-vertical col-sm-3 col-xs-4" style="padding:10px">
-        <button type="button" onclick="openFile()" class="btn btn-primary btn-block btn-default">Open</button>
+        <button type="button" onclick="openFile()" class="open-file btn btn-primary btn-block btn-default">Open</button>
         <button type="button" onclick="saveAs(()=>{});" class="btn btn-primary btn-block btn-default">Save As</button>
         <button type="button" onclick="save()" class="quicksave hidden-xs btn btn-primary btn-block btn-default">Save</button>
       </div>
@@ -62,6 +62,7 @@
     <div class="top-spacer"></div>
     <div id="sheets"></div>
     <script>
+      var loading = false;
       var mathquillAutoFormatTimeoutId = {pid:0};
       var mqaftoid = mathquillAutoFormatTimeoutId;
       /*
@@ -104,16 +105,16 @@
               var fontSize = get_font_size()
               if(fontSize>50)break;
               fontSize = fontSize + 1 + "px";
-              selector.css({'font-size':fontSize});
+              selector.css('font-size',fontSize);
             }
           } else {
             while(mathquill_block.height()>div_container.height()){
               var fontSize = get_font_size();
               fontSize = fontSize - 1 + "px";
-              selector.css({'font-size':fontSize});
+              selector.css('font-size',fontSize);
             }
             var fontSize = get_font_size()+1+"px"
-            selector.css({'font-size':fontSize});
+            selector.css('font-size',fontSize);
           }
         }
         var go_up=function () {
@@ -195,28 +196,51 @@
                 }
               }
             },
-            deleteOutOf:function () {
-              override_event=true;
-              if (current_line_number !== false ) { //this means that a line is selected
-                var line = current_page.lines[current_line_number]
-                if(line.MQ.latex()==""){//stops accidentla deletion
-                  if(current_line_number==0){
-                    //if it's the first line, don't delete!
-                  } else {
-                    var preceding_line = current_page.lines[current_line_number-1];
-                    current_page.lines.splice(current_line_number,1)
-                    line.MQ.revert()
-                    line.dom.remove()
-                    line.span.remove()
-                    if (preceding_line.isMQ) {
-                      preceding_line.MQ.focus()
+            deleteOutOf:function (direction) {
+              if (direction == 1) {//delete key
+                if (current_line_number !== false ) { //this means that a line is selected
+                  var line = current_page.lines[current_line_number]
+                  if(line.MQ.latex()==""){//stops accidentla deletion
+                    if(current_line_number==current_page.lines.length-1){
+                      //if it's the last line, don't delete!
                     } else {
-                      preceding_line.span.focus()
-                      setCaretPosition(preceding_line.span[0],preceding_line.span.text().length)//sets the cursor in the right spot
+                      var next_line = current_page.lines[current_line_number+1];
+                      current_page.lines.splice(current_line_number,1)
+                      line.MQ.revert()
+                      line.dom.remove()
+                      line.span.remove()
+                      if (next_line.isMQ) {
+                        next_line.MQ.focus()
+                      } else {
+                        next_line.span.focus()
+                        setCaretPosition(next_line.span[0],0)//sets the cursor in the right spot
+                      }
+                    }
+                  }
+                }
+              } else {//backspace key
+                if (current_line_number !== false ) { //this means that a line is selected
+                  var line = current_page.lines[current_line_number]
+                  if(line.MQ.latex()==""){//stops accidentla deletion
+                    if(current_line_number==0){
+                      //if it's the first line, don't delete!
+                    } else {
+                      var preceding_line = current_page.lines[current_line_number-1];
+                      current_page.lines.splice(current_line_number,1)
+                      line.MQ.revert()
+                      line.dom.remove()
+                      line.span.remove()
+                      if (preceding_line.isMQ) {
+                        preceding_line.MQ.focus()
+                      } else {
+                        preceding_line.span.focus()
+                        setCaretPosition(preceding_line.span[0],preceding_line.span.text().length)//sets the cursor in the right spot
+                      }
                     }
                   }
                 }
               }
+              override_event=true;
             },
             upOutOf:function () {
               console.log("Leaving MQ");override_event=true;
@@ -247,7 +271,12 @@
               }
             },
             edit: function() { // useful event handlers
-              clearTimeout(mathquillAutoFormatTimeoutId.pid)//stops any pending operatoins. this saves on cpu cycles
+              clearTimeout(mathquillAutoFormatTimeoutId.pid)
+              /*
+                stops any pending operations. this saves on cpu cycles when
+                typing things in really quicly or loading. it does slow down the
+                loading process but it stops it from freezing.
+              */
               mathquillAutoFormatTimeoutId.pid=setTimeout(()=>{
                 auto_adjust_mathquill(selector)
               },100)
@@ -656,6 +685,11 @@
           }
         }
         this.underline  = {
+          /*
+            Yes, this code is not in use right now, but you can manually make an
+            underlined line using either the console or manually opening the json
+            file with something like notepad.
+          */
           status:false,
           change:function () {
             //TBD.
@@ -663,6 +697,11 @@
           dom:null,
         }
         this.highlight  = {
+          /*
+            Yes, this code is not in use right now, but you can manually make a
+            highlited line using either the console or manually opening the json
+            file with something like notepad.
+          */
           status:0,
           dom:dom.find("span"),
           names:[
@@ -856,29 +895,45 @@
         alert("Just type things.\nPress ctrl + L to toggle math mode,\nPress ctrl + N for a new page.\nCtrl + B(old), Ctrl + I(talics) to format a line of text\nCtrl + K makes a large line\nYou can rename the title if you click on it.","Help")
       }
       var load_from_json=(instring)=>{
-        pages=[];
-        $("#sheets").empty()
-        foo = JSON.parse(instring);
-        $("#title-box").text(foo.title_text)
-        for (var i = 0; i < foo.pages.length; i++) {
-          new_page();
-          current_page=pages[i]
-          for (var j = 0; j < foo.pages[i].length; j++) {
-            mqaftoid.pid=undefined
-            pages[i].addline();
-            current_line_number=j;
-            line=pages[i].lines[j];
-            if(foo.pages[i][j].isMQ){//Broken rihgt now, and it kinda defeats the purpose of the whole program :/
-              var mathquill_event = jQuery.Event("keypress");
-              mathquill_event.which=12;
-              $("body").trigger(mathquill_event)//we just convert the thing to mathquill using the preexising code
-              line.MQ.latex(foo.pages[i][j].text)
-            } else {
-              line.span.text(foo.pages[i][j].text);
-              line.format=new Formatting(line.dom,foo.pages[i][j].formatting);
+        $(".open-file").removeClass("btn-primary").addClass("btn-info").text("Processing...")
+        setTimeout(()=>{//to allow proper rendering
+          pages=[];
+          $("#sheets").empty()
+          foo = JSON.parse(instring);
+          $("#title-box").text(foo.title_text)
+          for (var i = 0; i < foo.pages.length; i++) {
+            new_page();
+            current_page=pages[i];
+            current_page.lines[0].span.remove()
+            current_page.lines[0].dom.remove()
+            current_page.lines=[];
+            for (var j = 0; j < foo.pages[i].length; j++) {
+              mqaftoid.pid=undefined
+              pages[i].addline();
+              current_line_number=j;
+              line=pages[i].lines[j];
+              if(foo.pages[i][j].isMQ){//Broken rihgt now, and it kinda defeats the purpose of the whole program :/
+                var mathquill_event = jQuery.Event("keypress");
+                mathquill_event.which=12;
+                $("body").trigger(mathquill_event)/*
+                  we just convert the thing to mathquill using the preexising
+                  code. It would make more sense to use a function but this
+                  also works.
+                */
+                line.MQ.latex(foo.pages[i][j].text)
+              } else {
+                line.span.text(foo.pages[i][j].text);
+                line.format=new Formatting(line.dom,foo.pages[i][j].formatting);
+              }
             }
           }
-        }
+          setTimeout(()=>{
+            $(".open-file").addClass("btn-success").removeClass("btn-info").text("Loaded!");
+            setTimeout(()=>{
+              $(".open-file").removeClass("btn-success").addClass("btn-primary").text("Open");
+            },3000)
+          },500)
+        },10)
       }
     </script>
     <script>
@@ -959,7 +1014,7 @@
         ]},function (fileNames) {
           if (fileNames === undefined) return;
           current_file_path=fileNames[0]
-          var fileName = fileNames[0];
+          var fileName = fileNames[ 0];
           fs.readFile(fileName, 'utf-8', function (err, data) {
             load_from_json(data)
             ipc.send('backup_path', current_file_path)

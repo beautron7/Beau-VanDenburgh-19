@@ -46,12 +46,36 @@
   }
   .triple-line{
     width:14.6cm;
-    height:2.0505cm;
+    height:2.014cm;
     margin:0;
     background-color: rgba(255,255,255,0.9)!important;
     border-bottom-style: solid;
     border-bottom-color: rgba(0,0,255,0.9);
     border-bottom-width: 0.03cm
+    -webkit-print-color-adjust: exact !important;
+  }
+  .quad-line{
+    width:14.6cm;
+    height:2.715cm;
+    margin:0;
+    background-color: rgba(255,255,255,0.9)!important;
+    font-size: 40px;
+
+    border-bottom-style: solid;
+    border-bottom-color: rgba(0,0,255,0.9);
+    border-bottom-width: 0.03cm
+    -webkit-print-color-adjust: exact !important;
+  }
+  .five-line{
+  	width:14.6cm;
+  	height:3.4cm;
+  	margin:0;
+  	background-color: rgba(255,255,255,0.9)!important;
+  	font-size: 40px;
+
+  	border-bottom-style: solid;
+  	border-bottom-color: rgba(0,0,255,0.9);
+  	border-bottom-width: 0.03cm
     -webkit-print-color-adjust: exact !important;
   }
 }

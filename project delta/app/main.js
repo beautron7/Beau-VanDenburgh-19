@@ -172,11 +172,16 @@ ipc.on('backup_data', function (event, arg) {
   latest_backup=new Date
 });
 
-ipc.on("backup_path",function (event,arg) {
-  backup_path=arg;
-  console.log("Path recieved:"+arg)
-  paths=arg.match(/(^.+(\\|\/))(.+$)/)
-  win.setTitle(paths[3]+" --- "+paths[1]+" --- Project Delta")
+ipc.on("backup_path",function (event,backup_path) {
+  if(typeof backup_path != "string"){
+    console.log("A path was recieved but it was null.")
+  } else if (backup_path==""){
+    console.log("A path was recieved, but it was an empty string")
+  } else {
+    console.log("Path recieved:"+backup_path)
+    paths=backup_path.match(/(^.+(\\|\/))(.+$)/)
+    win.setTitle(paths[3]+" --- "+paths[1]+" --- Project Delta")
+  }
 })
 
 var re_arm=function () {
