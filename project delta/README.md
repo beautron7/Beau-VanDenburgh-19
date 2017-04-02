@@ -41,9 +41,8 @@ A way to take notes (and type math) built off of electron, bootstrap, jQuery, Ma
 -  `Ctrl+B`: Bold a line
 -  `Ctrl+I`: Italicize a line
 -  `Ctrl+P`: Convert to pdf to print
--  `Ctrl+O`: Open a file (first, save your old one)
+-  `Ctrl+O`: Open a file in the current window (unsaved changes will be lost)
 -  `Ctrl+S`: Save, or save as
--  `Ctrl+K`: Toggle font size between 1 line and 2 lines (for text)
 
 
 #### Footnotes
