@@ -1,6 +1,4 @@
 <!--
-  TODO: shirnk mathquillify, add new class called Mathline.
-
   The entire application is just 1 html file right now.
   I have tried to comment my code sufficiently
   but i want this to actually make progress and not end up
@@ -17,7 +15,6 @@
   <head>
     <meta charset="UTF-8">
     <title>Template</title>
-    <!-- Load ALL THE THINGS! -->
     <script>
     const ipc = require('electron').ipcRenderer
     window.nodeRequire = require;
@@ -63,6 +60,8 @@
     <div class="top-spacer"></div>
     <div id="sheets"></div>
     <script>
+      const debug_version = true;//used to suppress console.log
+      var font_perf_data=[];//array of ints, used to collect data on how often we use jquery  to chekc fontsize
       var loading = false;
       var mathquillAutoFormatTimeoutId = {pid:0};
       var mqaftoid = mathquillAutoFormatTimeoutId;
@@ -75,7 +74,6 @@
         each pizza individually
 
         the weird acronym is used becasue that variablename is long
-
       */
       var override_event = false;
       var get_div_size=(dom)=>{
@@ -84,7 +82,7 @@
           "double-line",
           "triple-line",
           "quad-line",
-          "five-line"
+          "five-line",
         ]
         var oldsize = false;
         for (var i = 0; i < sizes.length; i++) {
@@ -97,25 +95,27 @@
       var auto_adjust_mathquill =(selector)=>{
         var div_container = selector.parent()
         var mathquill_block = selector.find(".mq-root-block")
+        var font_call_count = 0
         var get_font_size=function () {
+          font_call_count++;
           return parseInt(selector.css("font-size"));
         }
         var adjust_font_to_fit=()=>{
           if(mathquill_block.height()<div_container.height()){
+            var fontSize = get_font_size()
             while(mathquill_block.height()<div_container.height()){
-              var fontSize = get_font_size()
               if(fontSize>50)break;
-              fontSize = fontSize + 1 + "px";
-              selector.css('font-size',fontSize);
+              fontSize+=1;
+              selector.css('font-size',fontSize+"px");
             }
           } else {
+            var fontSize = get_font_size()
             while(mathquill_block.height()>div_container.height()){
-              var fontSize = get_font_size();
-              fontSize = fontSize - 1 + "px";
-              selector.css('font-size',fontSize);
+              fontSize-=1;
+              selector.css('font-size',fontSize+"px");
             }
-            var fontSize = get_font_size()+1+"px"
-            selector.css('font-size',fontSize);
+            fontSize+=1;
+            selector.css('font-size',fontSize+"px");
           }
         }
         var go_up=function () {
@@ -123,13 +123,21 @@
           adjust_font_to_fit();
         }
         var go_down=function () {
-          console.log("DN: new size:"+change_div_size(div_container,false));//auto-shrink
+          if(debug_version){
+            console.log("DN: new size:"+change_div_size(div_container,false));//auto-shrink
+          }
           adjust_font_to_fit();
         }
         adjust_font_to_fit();
         while (get_font_size() < 18) go_up();
         go_up();
         while (get_font_size()*(1+(get_div_size(div_container)*0.05)) > 35) go_down();
+        if(debug_version){
+          if (debug_version) {
+            console.log(`get_font_size was called ${font_call_count} times`)
+          }
+          font_perf_data.push(font_call_count);
+        }
       }
       var change_div_size =(dom,change_up)=>{//there are different div sizes and this function allows for easy expansion
         oldsize=get_div_size(dom)
@@ -178,6 +186,7 @@
                     var newline =current_page.lines[current_line_number-1];
                     if(newline.isMQ){
                       newline.MQ.focus();
+                      newline.MQ.moveToRightEnd()
                     } else {
                       newline.span.focus();
                       setCaretPosition(newline.span[0],newline.span.text().length)
@@ -212,6 +221,7 @@
                       line.span.remove()
                       if (next_line.isMQ) {
                         next_line.MQ.focus()
+                        next_line.MQ.moveToLeftEnd()
                       } else {
                         next_line.span.focus()
                         setCaretPosition(next_line.span[0],0)//sets the cursor in the right spot
@@ -233,6 +243,7 @@
                       line.span.remove()
                       if (preceding_line.isMQ) {
                         preceding_line.MQ.focus()
+                        preceding_line.MQ.moveToRightEnd()
                       } else {
                         preceding_line.span.focus()
                         setCaretPosition(preceding_line.span[0],preceding_line.span.text().length)//sets the cursor in the right spot
@@ -244,7 +255,10 @@
               override_event=true;
             },
             upOutOf:function () {
-              console.log("Leaving MQ");override_event=true;
+              if (debug_version) {
+                console.log("Leaving MQ");
+              }
+              override_event=true;
               if (current_line_number !== false ) { //this means that a line is selected. this sould work under all circumstances
                 if(current_line_number==0){//first line
                   //TBD
@@ -252,6 +266,7 @@
                   var newline =current_page.lines[current_line_number-1];
                   if(newline.isMQ){
                     newline.MQ.focus();
+                    newline.MQ.moveToRightEnd()
                   } else {
                     newline.span.focus();
                   }
@@ -266,6 +281,7 @@
                 var newline =current_page.lines[current_line_number+1];
                 if(newline.isMQ){
                   newline.MQ.focus();
+                  newline.MQ.moveToLeftEnd()
                 } else {
                   newline.span.focus();
                 }
@@ -280,7 +296,7 @@
               */
               mathquillAutoFormatTimeoutId.pid=setTimeout(()=>{
                 auto_adjust_mathquill(selector)
-              },100)
+              },50)
             }
           }
         });
@@ -347,7 +363,9 @@
           }
           if(e.ctrlKey){
             formatted=true;
-            console.log(e.keyCode)
+            if (debug_version) {
+              console.log(`key ${e.keycode} pressed`)
+            }
             if(e.keyCode==66){//ctrl b
               e.preventDefault();
               if (current_line_number !== false ) { //this means that a line is selected
@@ -400,6 +418,7 @@
                     var preceding_line = current_page.lines[current_line_number-1];
                     if (preceding_line.isMQ) {
                       preceding_line.MQ.focus()
+                      preceding_line.moveToRightEnd()
                     } else {
                       preceding_line.span.focus()
                       setCaretPosition(preceding_line.span[0],preceding_line.span.text().length)//sets the cursor in the right spot
@@ -426,6 +445,7 @@
                         line.span.remove();
                         line.dom.remove();
                         next_line.MQ.focus();
+                        next_line.MQ.moveToLeftEnd()
                       }
                     } else {
                       current_page.lines.splice(current_line_number+1,1);//now remove old line
@@ -452,6 +472,7 @@
                   var preceding_line = current_page.lines[current_line_number-1];
                   if (preceding_line.isMQ) {
                     preceding_line.MQ.focus()
+                    preceding_line.MQ.moveToRightEnd
                   } else {
                     var cursorpos = getCaretPosition(oldline.span[0])
                     var maxpos=current_page.lines[current_line_number-1].span.text().length
@@ -476,6 +497,7 @@
                     var next_line = current_page.lines[current_line_number+1];
                     if (next_line.isMQ) {
                       next_line.MQ.focus()
+                      next_line.MQ.moveToLeftEnd()
                     } else {
                       next_line.span.focus()
                       setCaretPosition(next_line.span[0],0)//sets the cursor in the right spot
@@ -499,6 +521,7 @@
                   var next_line=current_page.lines[current_line_number+1];
                   if(next_line.isMQ){
                     next_line.MQ.focus()
+                    next_line.MQ.moveToLeftEnd()
                   } else {
                     var cursorpos = getCaretPosition(line.span[0])
                     var maxpos=next_line.span.text().length
@@ -523,6 +546,7 @@
                     if (preceding_line.isMQ) {
                       //so what we need to do is focus it
                       preceding_line.MQ.focus()
+                      preceding_line.MQ.moveToRightEnd()
                     } else {
                       var text = line.span.text();
                       var preceding_line_text = preceding_line.span.text()
@@ -533,6 +557,17 @@
                       line.dom.remove();
                       preceding_line.span.focus()
                       setCaretPosition(preceding_line.span[0],new_cursor_pos)//sets the cursor in the right spot
+                    }
+                  } else {
+                    if(current_page.lines.length==1){
+                      if (line.span.text().length==0) {
+                        if (pages.indexOf(current_page)!=0) {
+                          pages.splice(pages.indexOf(current_page),1)
+                          line.span.remove()
+                          line.dom.parent().remove()
+                          line.dom.remove();
+                        }
+                      }
                     }
                   }
                 }
@@ -548,7 +583,9 @@
           */
           if(e.which === 13 && !e.ctrlKey /*enter*/ ){
             event.preventDefault()
-            console.log("ENTER PRESSED:\n\n\nline:"+current_line_number)
+            if (debug_version) {
+              console.log("ENTER PRESSED:\n\n\nline:"+current_line_number)
+            }
             if (current_line_number !== false ) { //this means that a line is selected
               if(current_page.lines[current_line_number].isMQ){
                 //what does happen if the current line is mq? probably we shoulld just add another mq
@@ -561,7 +598,6 @@
                 var left_text= orig_line.span.text().substring(0,position);
                 var right_text= orig_line.span.text().substring(position);
                 var next_line=current_page.injectline("",orig_line_num)
-                console.log("position:"+position+"\nleft: \""+left_text+"\",\nright:\""+right_text+"\"")
                 orig_line.span.blur()
                 next_line.span.text(right_text).focus();
                 orig_line.span.empty().text(left_text);
@@ -616,14 +652,17 @@
                 var this_page=current_page
                 line.span.set_active = function() {
                   current_line_number=line.getNumber()
-                  console.log("focus: "+line.getNumber())
+                  if (debug_version) {
+                    console.log("focus: "+line.getNumber())
+                  }
                   current_page=this_page;
                 }
                 line.span.set_inactive = function() {
                   self_line_number=line.getNumber()
-                  console.log(self_line_number)
                   if(current_line_number==self_line_number){
-                    console.log("de focus: "+current_line_number)
+                    if (debug_version) {
+                      console.log("de focus: "+current_line_number)
+                    }
                     current_line_number=false;
                   };
                 }
@@ -787,6 +826,7 @@
         this.dom = $(".id"+tempid);
         this.dom.removeClass("id"+tempid)
         this.dom.append("<span class='monospace editable id"+tempid+"'></span>")
+        // this.dom.addClass("line")
         this.span=$(".id"+tempid);
         this.span.removeClass("id"+tempid)
         this.isMQ=false;
@@ -800,27 +840,29 @@
         this.dom.removeClass("id"+tempid)
         this.lines=[];
         this.injectline=(type,original_line_number)=>{
-          console.log(original_line_number);
           var this_line = new InjectLineAfter(this.lines[original_line_number].dom);
-          this.lines.splice(original_line_number+1, 0, this_line)
+          this.lines.splice(original_line_number+1, 0, this_line);
           if (this_line!=this.lines[original_line_number+1]) {
-            throw "error in array splicing!"
+            throw "error in array splicing!";
           }
           var line_dom = this_line.span;
           this_line.getNumber=()=>(
-            this_page.lines.indexOf(this_line)
+            this_page.lines.indexOf(this_line);
           )
           var this_page= this;
           this_line.set_active = function() {
             current_line_number=this_line.getNumber()
-            console.log("focus: "+this_line.getNumber())
+            if (debug_version) {
+              console.log("focus: "+this_line.getNumber());
+            }
             current_page=this_page;
           }
           this_line.set_inactive = function() {
             self_line_number=this_line.getNumber()
-            console.log(self_line_number)
             if(current_line_number==self_line_number){
-              console.log("de focus: "+current_line_number)
+              if(debug_version)}{
+                console.log("de focus: "+current_line_number)
+              };
               current_line_number=false;
             };
           }
@@ -840,14 +882,17 @@
           var this_page= this;
           this_line.set_active = function() {
             current_line_number=this_line.getNumber()
-            console.log("focus: "+current_line_number)
+            if (debug_version) {
+              console.log("focus: "+current_line_number)
+            }
             current_page=this_page;
           }
           this_line.set_inactive = function() {
             self_line_number=this_line.getNumber()
-            console.log(self_line_number)
             if(current_line_number==self_line_number){
-              console.log("de focus: "+current_line_number)
+              if (debug_version) {
+                console.log("de focus: "+current_line_number)
+              }
               current_line_number=false;
             };
           }
