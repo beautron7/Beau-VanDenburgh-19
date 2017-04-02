@@ -65,6 +65,14 @@
       var loading = false;
       var mathquillAutoFormatTimeoutId = {pid:0};
       var mqaftoid = mathquillAutoFormatTimeoutId;
+      var global_override_mq_autofit = false;
+      const sizes = [
+        "single-line",
+        "double-line",
+        "triple-line",
+        "quad-line",
+        "five-line"
+      ]
       /*
         basically, to stop mathquill from repeatedly trying to format, it will
         settimeout for the formatting operation, and will wait for the user
@@ -77,13 +85,6 @@
       */
       var override_event = false;
       var get_div_size=(dom)=>{
-        var sizes = [
-          "single-line",
-          "double-line",
-          "triple-line",
-          "quad-line",
-          "five-line",
-        ]
         var oldsize = false;
         for (var i = 0; i < sizes.length; i++) {
           if(dom.hasClass(sizes[i])){
@@ -141,13 +142,6 @@
       }
       var change_div_size =(dom,change_up)=>{//there are different div sizes and this function allows for easy expansion
         oldsize=get_div_size(dom)
-        var sizes = [
-          "single-line",
-          "double-line",
-          "triple-line",
-          "quad-line",
-          "five-line"
-        ]
         if(change_up){
           if(oldsize==sizes.length-1){
             //welp
@@ -288,6 +282,7 @@
               }
             },
             edit: function() { // useful event handlers
+              if(global_override_mq_autofit===true){return}
               clearTimeout(mathquillAutoFormatTimeoutId.pid)
               /*
                 stops any pending operations. this saves on cpu cycles when
@@ -813,6 +808,7 @@
         line_x_dom.after('<div align="left" class="id'+tempid+' single-line"></div>')
         this.dom = $(".id"+tempid);
         this.dom.removeClass("id"+tempid)
+        this.dom.addClass("line")
         this.dom.append("<span class='monospace editable id"+tempid+"'></span>")
         this.span=$(".id"+tempid);
         this.span.removeClass("id"+tempid)
@@ -826,7 +822,7 @@
         this.dom = $(".id"+tempid);
         this.dom.removeClass("id"+tempid)
         this.dom.append("<span class='monospace editable id"+tempid+"'></span>")
-        // this.dom.addClass("line")
+        this.dom.addClass("line")
         this.span=$(".id"+tempid);
         this.span.removeClass("id"+tempid)
         this.isMQ=false;
@@ -847,7 +843,7 @@
           }
           var line_dom = this_line.span;
           this_line.getNumber=()=>(
-            this_page.lines.indexOf(this_line);
+            this_page.lines.indexOf(this_line)
           )
           var this_page= this;
           this_line.set_active = function() {
@@ -860,7 +856,7 @@
           this_line.set_inactive = function() {
             self_line_number=this_line.getNumber()
             if(current_line_number==self_line_number){
-              if(debug_version)}{
+              if(debug_version){
                 console.log("de focus: "+current_line_number)
               };
               current_line_number=false;
@@ -916,18 +912,20 @@
       }
       make_editable($(".editable"))
       var save_to_json=()=>{
-        var foo = {title_text:$("#title-box").text(),pages:[]}
-        // foo.focus={line:current_line_number,page:pages.indexOf(current_page)}
+        var file = {title_text:$("#title-box").text(),pages:[],has_font_for_mq:true}
+        // file.focus={line:current_line_number,page:pages.indexOf(current_page)}
         for (var i = 0; i < pages.length; i++) {
-          foo.pages[i]=[];
+          file.pages[i]=[];
           for (var j = 0; j < pages[i].lines.length; j++) {
             if(pages[i].lines[j].isMQ){
-              foo.pages[i][j]={
+              file.pages[i][j]={
                 isMQ:true,
-                text:pages[i].lines[j].MQ.latex()
+                text:pages[i].lines[j].MQ.latex(),
+                font_size: pages[i].lines[j].span.css("font-size"),
+                div_size:get_div_size(pages[i].lines[j].dom)
               }
             } else {
-              foo.pages[i][j]={
+              file.pages[i][j]={
                 isMQ:false,
                 text:pages[i].lines[j].span.text(),
                 formatting:pages[i].lines[j].format.dump()
@@ -935,7 +933,7 @@
             }
           }
         }
-        return JSON.stringify(foo);
+        return JSON.stringify(file);
       }
       var help=()=>{
         alert("Just type things.\nPress ctrl + L to toggle math mode,\nPress ctrl + N for a new page.\nCtrl + B(old), Ctrl + I(talics) to format a line of text\nCtrl + K makes a large line\nYou can rename the title if you click on it.","Help")
@@ -945,20 +943,23 @@
         setTimeout(()=>{//to allow proper rendering
           pages=[];
           $("#sheets").empty()
-          foo = JSON.parse(instring);
-          $("#title-box").text(foo.title_text)
-          for (var i = 0; i < foo.pages.length; i++) {
+          file = JSON.parse(instring);
+          $("#title-box").text(file.title_text)
+          if (file.has_font_for_mq===true) {
+            global_override_mq_autofit=true;
+          }
+          for (var i = 0; i < file.pages.length; i++) {
             new_page();
             current_page=pages[i];
             current_page.lines[0].span.remove()
             current_page.lines[0].dom.remove()
             current_page.lines=[];
-            for (var j = 0; j < foo.pages[i].length; j++) {
+            for (var j = 0; j < file.pages[i].length; j++) {
               mqaftoid.pid=undefined
               pages[i].addline();
               current_line_number=j;
               line=pages[i].lines[j];
-              if(foo.pages[i][j].isMQ){//Broken rihgt now, and it kinda defeats the purpose of the whole program :/
+              if(file.pages[i][j].isMQ){//Broken rihgt now, and it kinda defeats the purpose of the whole program :/
                 var mathquill_event = jQuery.Event("keypress");
                 mathquill_event.which=12;
                 $("body").trigger(mathquill_event)/*
@@ -966,14 +967,19 @@
                   code. It would make more sense to use a function but this
                   also works.
                 */
-                line.MQ.latex(foo.pages[i][j].text)
+                line.MQ.latex(file.pages[i][j].text)
+                if (global_override_mq_autofit) {
+                  line.dom.removeClass("single-line").addClass(sizes[file.pages[i][j].div_size])
+                  line.span.css("font-size",file.pages[i][j].font_size)
+                }
               } else {
-                line.span.text(foo.pages[i][j].text);
-                line.format=new Formatting(line.dom,foo.pages[i][j].formatting);
+                line.span.text(file.pages[i][j].text);
+                line.format=new Formatting(line.dom,file.pages[i][j].formatting);
               }
             }
           }
           setTimeout(()=>{
+            global_override_mq_autofit=false;
             $(".open-file").addClass("btn-success").removeClass("btn-info").text("Loaded!");
             setTimeout(()=>{
               $(".open-file").removeClass("btn-success").addClass("btn-primary").text("Open");

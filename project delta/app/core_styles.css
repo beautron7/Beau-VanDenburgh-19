@@ -54,59 +54,34 @@
   padding-top:2.719cm;
   padding-right:3.24cm;
 }
-.single-line{
+.line{
 	overflow: hidden;
-  width:14.6cm;
-  height:0.6792cm;
-  margin:0;
-  font-size: 20px;
-  border-bottom-style: solid;
-  border-bottom-color: rgba(0,0,255,0.9);
-  border-bottom-width: 0.03cm
-}
-.double-line{
-  width:14.6cm;
-  height:1.358cm;/*1.362 is the magic number here*/
-  margin:0;
-  background-color: rgba(255,255,255,0.9);
-  font-size: 40px;
-
-  border-bottom-style: solid;
-  border-bottom-color: rgba(0,0,255,0.9);
-  border-bottom-width: 0.03cm
-}
-.triple-line{
-  width:14.6cm;
-  height:2.039cm;
-  margin:0;
-  background-color: rgba(255,255,255,0.9);
-  font-size: 40px;
-
-  border-bottom-style: solid;
-  border-bottom-color: rgba(0,0,255,0.9);
-  border-bottom-width: 0.03cm
-}
-.quad-line{
-  width:14.6cm;
-  height:2.715cm;
-  margin:0;
-  background-color: rgba(255,255,255,0.9);
-  font-size: 40px;
-
-  border-bottom-style: solid;
-  border-bottom-color: rgba(0,0,255,0.9);
-  border-bottom-width: 0.03cm
-}
-.five-line{
 	width:14.6cm;
-	height:3.4cm;
 	margin:0;
-	background-color: rgba(255,255,255,0.9);
-	font-size: 40px;
-
+  background-color: rgba(255,255,255,0.9);
 	border-bottom-style: solid;
 	border-bottom-color: rgba(0,0,255,0.9);
 	border-bottom-width: 0.03cm
+}
+.single-line{
+  height:0.6792cm;
+  font-size: 20px;
+}
+.double-line{
+  height:1.358cm;/*1.362 is the magic number here*/
+  font-size: 40px;
+}
+.triple-line{
+  height:2.039cm;
+  font-size: 40px;
+}
+.quad-line{
+  height:2.716cm;
+  font-size: 40px;
+}
+.five-line{
+	height:3.4cm;
+	font-size: 40px;
 }
 .top-spacer{
   margin:3cm;

@@ -24,58 +24,37 @@
     -webkit-print-color-adjust: exact !important;
     page-break-after: always;
   }
+  .line{
+  	overflow: hidden !important;
+  	width:14.6cm !important;
+  	margin:0 !important;
+    background-color: rgba(255,255,255,0.9) !important;
+  	border-bottom-style: solid !important;
+  	border-bottom-color: rgba(0,0,255,0.9) !important;
+  	border-bottom-width: 0.03cm !important;
+    visibility: visible !important;
+  }
   .single-line{
-  	overflow: hidden;
-    width:14.6cm;
-    height:0.6792cm;
-    margin:0;
-    border-bottom-style: solid;
-    border-bottom-color: rgba(0,0,255,0.9);
-    border-bottom-width: 0.03cm
-    -webkit-print-color-adjust: exact !important;
+    height:0.6792cm !important;
+    font-size: 20px;
   }
   .double-line{
-    width:14.6cm;
-    height:1.358cm;/*1.362 is the magic number here*/
-    margin:0;
-    background-color: rgba(255,255,255,0.9) !important;
-    border-bottom-style: solid;
-    border-bottom-color: rgba(0,0,255,0.9);
-    -webkit-print-color-adjust: exact !important;
-    border-bottom-width: 0.03cm
+    height:1.358cm !important;/*1.362 is the magic number here*/
+    font-size: 40px;
   }
   .triple-line{
-    width:14.6cm;
-    height:2.014cm;
-    margin:0;
-    background-color: rgba(255,255,255,0.9)!important;
-    border-bottom-style: solid;
-    border-bottom-color: rgba(0,0,255,0.9);
-    border-bottom-width: 0.03cm
-    -webkit-print-color-adjust: exact !important;
+    height:2.039cm !important;
+    font-size: 40px;
   }
   .quad-line{
-    width:14.6cm;
-    height:2.715cm;
-    margin:0;
-    background-color: rgba(255,255,255,0.9)!important;
+    height:2.716cm !important;
     font-size: 40px;
-
-    border-bottom-style: solid;
-    border-bottom-color: rgba(0,0,255,0.9);
-    border-bottom-width: 0.03cm
-    -webkit-print-color-adjust: exact !important;
   }
   .five-line{
-  	width:14.6cm;
-  	height:3.4cm;
-  	margin:0;
-  	background-color: rgba(255,255,255,0.9)!important;
+  	height:3.4cm !important;
   	font-size: 40px;
-
-  	border-bottom-style: solid;
-  	border-bottom-color: rgba(0,0,255,0.9);
-  	border-bottom-width: 0.03cm
-    -webkit-print-color-adjust: exact !important;
+  }
+  .top-spacer{
+    margin:3cm;
   }
 }
