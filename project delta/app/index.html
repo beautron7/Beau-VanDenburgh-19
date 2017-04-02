@@ -60,7 +60,7 @@
     <div class="top-spacer"></div>
     <div id="sheets"></div>
     <script>
-      const debug_version = true;//used to suppress console.log
+      const debug_version = false;//used to suppress console.log
       var font_perf_data=[];//array of ints, used to collect data on how often we use jquery  to chekc fontsize
       var loading = false;
       var mathquillAutoFormatTimeoutId = {pid:0};
@@ -83,25 +83,25 @@
 
         the weird acronym is used becasue that variablename is long
       */
-      var override_event = false;
-      var get_div_size=(dom)=>{
-        var oldsize = false;
+      var disable_keybinds = false;
+      var get_div_size=(dom)=>{//returns an int representing the div size
+        var oldsize = false;//if we cant find a size then return false
         for (var i = 0; i < sizes.length; i++) {
-          if(dom.hasClass(sizes[i])){
+          if(dom.hasClass(sizes[i])){//we cant use indexOf because we're searching for a class
             oldsize=i;
           }
         }
         return oldsize;
       }
-      var auto_adjust_mathquill =(selector)=>{
+      var auto_adjust_mathquill =(selector)=>{//this automatically fixes a mathquill object to make it take up as few lines as possible without having too small of a font
         var div_container = selector.parent()
         var mathquill_block = selector.find(".mq-root-block")
         var font_call_count = 0
-        var get_font_size=function () {
+        var get_font_size=function () {//returns font-size as an int
           font_call_count++;
           return parseInt(selector.css("font-size"));
         }
-        var adjust_font_to_fit=()=>{
+        var adjust_font_to_fit=()=>{//this just fixxes the font size so everything is within the parent div
           if(mathquill_block.height()<div_container.height()){
             var fontSize = get_font_size()
             while(mathquill_block.height()<div_container.height()){
@@ -113,34 +113,35 @@
             var fontSize = get_font_size()
             while(mathquill_block.height()>div_container.height()){
               fontSize-=1;
+              if(fontSize<0)break;
               selector.css('font-size',fontSize+"px");
             }
             fontSize+=1;
             selector.css('font-size',fontSize+"px");
           }
         }
-        var go_up=function () {
+        var go_up=function () {//makes div larger and then fits font
           change_div_size(div_container,true);//auto-grow
           adjust_font_to_fit();
         }
-        var go_down=function () {
+        var go_down=function () {//opposite of go up. we have a debuglog here bec this is a frequent point of failure.
           if(debug_version){
             console.log("DN: new size:"+change_div_size(div_container,false));//auto-shrink
+          } else {
+            change_div_size(div_container,false)
           }
           adjust_font_to_fit();
         }
         adjust_font_to_fit();
-        while (get_font_size() < 18) go_up();
+        while (get_font_size() < 18) go_up();//never allow font size to go above 18
         go_up();
-        while (get_font_size()*(1+(get_div_size(div_container)*0.05)) > 35) go_down();
+        while (get_font_size()*(1+(get_div_size(div_container)*0.05)) > 35) go_down();//we do the wierd multiplication because without it, it is impossible for an equasion to take up 4 lines, which is usefull for a double-fraction
         if(debug_version){
-          if (debug_version) {
-            console.log(`get_font_size was called ${font_call_count} times`)
-          }
+          console.log(`get_font_size was called ${font_call_count} times`)
           font_perf_data.push(font_call_count);
         }
       }
-      var change_div_size =(dom,change_up)=>{//there are different div sizes and this function allows for easy expansion
+      var change_div_size =(dom,change_up)=>{//there are different div sizes and this function allows for easy expansion or shrinking
         oldsize=get_div_size(dom)
         if(change_up){
           if(oldsize==sizes.length-1){
@@ -161,17 +162,18 @@
       var mathquillify =(selector)=> {
         /*
           mathqill is a library that makes typing math easy. mathquillify
-          converts a line of text into a mathquill field.
+          converts a line of text into a mathquill field. before you critique me
+          for using a wierd name, the authors of the library use this term.
         */
-        selector.removeClass("monospace")
-        var mathFieldSpan = selector[0]
-        var MQ = MathQuill.getInterface(2); // for backcompat
+        selector.removeClass("monospace")//this fixes some font issues
+        var mathFieldSpan = selector[0]//jquery -> plain old javascript
+        var MQ = MathQuill.getInterface(2); // Devs of MQ say this is needed for backcompatibility. works fine like this.
         var mathField = MQ.MathField(mathFieldSpan, {
           spaceBehavesLikeTab: true, // configurable
-          autoCommands: 'pi theta sqrt sum',
+          autoCommands: 'pi theta sqrt sum',//these are autoconverted to their symbols
           handlers: {
-            moveOutOf:function(){
-              override_event=true;
+            moveOutOf:function(){//when we use the arrows to move out of this feild, these functions are called. they allow for page traversal
+              disable_keybinds=true;
               if(arguments[0]==-1){
                 if (current_line_number !== false ) { //this means that a line is selected. there is no situation where this should trigger, but its better to be safe then sorry
                   if(current_line_number==0){//first line
@@ -200,7 +202,7 @@
                 }
               }
             },
-            deleteOutOf:function (direction) {
+            deleteOutOf:function (direction) {//see moveoutof for explanation
               if (direction == 1) {//delete key
                 if (current_line_number !== false ) { //this means that a line is selected
                   var line = current_page.lines[current_line_number]
@@ -246,13 +248,13 @@
                   }
                 }
               }
-              override_event=true;
+              disable_keybinds=true;//this stops the next keypress in  the /*keybindings*/ function.
             },
             upOutOf:function () {
               if (debug_version) {
                 console.log("Leaving MQ");
               }
-              override_event=true;
+              disable_keybinds=true;
               if (current_line_number !== false ) { //this means that a line is selected. this sould work under all circumstances
                 if(current_line_number==0){//first line
                   //TBD
@@ -268,7 +270,7 @@
               }
             },
             downOutOf:function () {
-              override_event=true;
+              disable_keybinds=true;
               if(current_line_number==current_page.lines.length-1){//last line
                 //tbd
               } else {
@@ -281,13 +283,14 @@
                 }
               }
             },
-            edit: function() { // useful event handlers
+            edit: function() { // when we edit it, we need to re-evaluate the size to make sure it isnt too small or large
               if(global_override_mq_autofit===true){return}
               clearTimeout(mathquillAutoFormatTimeoutId.pid)
               /*
                 stops any pending operations. this saves on cpu cycles when
-                typing things in really quicly or loading. it does slow down the
-                loading process but it stops it from freezing.
+                typing things in really quicly and makes fractions look more
+                animated bec they "snap in" instead of instantly appearing.
+                if you dont like it, change the 50 to a 0
               */
               mathquillAutoFormatTimeoutId.pid=setTimeout(()=>{
                 auto_adjust_mathquill(selector)
@@ -297,7 +300,7 @@
         });
         return mathField
       }
-      var getCaretPosition =(element)=> {//gets the cursor position
+      var getCaretPosition =(element)=> {//gets the cursor position. stolen from stackoverflow.
         var caretOffset = 0;
         var doc = element.ownerDocument || element.document;
         var win = doc.defaultView || doc.parentWindow;
@@ -320,7 +323,7 @@
         }
         return caretOffset;
       }
-      var setCaretPosition =(el, pos)=> { //sets the cursor position
+      var setCaretPosition =(el, pos)=> { //sets the cursor position. also stolen from stackoverflow.
         for(var node of el.childNodes){
           if(node.nodeType == 3){ // we have a text node
             if(node.length >= pos){
@@ -344,38 +347,134 @@
         }
         return pos; // needed because of recursion stuff
       }
+      var mathLineify=()=>{//used to toggle whether or not somethings a mathline
+        console.log("M");//this means it was pressed. this is usefull for debugging.
+        if (current_line_number !== false ) {
+          var line = current_page.lines[current_line_number];
+          if (line.isMQ) {
+            var hold_line_number = current_line_number //this value gets modified during some operations
+            line.MQ.revert()
+            var text = line.span.text();
+            var newline=current_page.injectline("normal",current_line_number)//inject a line after current one
+            current_page.lines.splice(hold_line_number,1)//remove that old line from the list
+            line.span.remove()//and from the document
+            line.dom.remove()
+            newline.span.text(text);//give it correct text
+            newline.span.focus()//focus it
+          } else {
+            console.log("Q");//this is used to detect focus problems
+            line.format.clear();
+            // line.dom.addClass("double-line").removeClass("single-line")
+            var text = line.span.text();
+            line.span.text("").attr("contentEditable",false);
+            line.MQ = mathquillify(line.span);
+            // setTimeout(()=>{line.MQ.focus()},0)
+            line.MQ.destroy=line.MQ.revert;
+            line.MQ.revert=()=>{
+              var latex = line.MQ.latex();
+              line.MQ.destroy();
+              line.span.removeClass("mq-focused").addClass("monospace");
+              line.span.text(latex);
+              make_editable(line.span);
+              line.span.focus();
+            }
+            text=text.replace("+-","\\pm");//convienence things. this is where eventually things like fraction conversion will be handled
+            text=text.replace("\\sqrt","sqrt");
+            text=text.replace("sqrt","\\sqrt");
+            text=text.replace("\\pi","pi");
+            text=text.replace("pi","\\pi");
+            for (var i = 0; i < text.length; i++) {
+              if(text[i]==" "){
+                line.MQ.keystroke("Spacebar");
+              } else {
+                line.MQ.typedText(text[i]);
+              }
+            }
+            line.isMQ=true;//this allows for easy distinction between text and math lines
+            var this_page=current_page;
+            line.span.set_active = function() {
+              current_line_number=line.getNumber();
+              if (debug_version) {
+                console.log("focus: "+line.getNumber());
+              }
+              current_page=this_page;
+            }
+            line.span.set_inactive = function() {
+              self_line_number=line.getNumber();
+              if(current_line_number==self_line_number){
+                if (debug_version) {
+                  console.log("de focus: "+current_line_number);
+                }
+                current_line_number=false;
+              };
+            }
+            line.bind=function(){
+              line.span.find(".mq-textarea").find("textarea").bind('focus',line.span.set_active);
+              line.span.find(".mq-textarea").find("textarea").bind('blur',line.span.set_inactive);
+            };
+            line.bind();
+            line.MQ.focus();
+          }
+        }
+      }
+      var breakLine=()=>{
+        if (debug_version) {
+          console.log("ENTER PRESSED:\n\n\nline:"+current_line_number)
+        }
+        if (current_line_number !== false ) { //this means that a line is selected
+          if(current_page.lines[current_line_number].isMQ){
+            //what does happen if the current line is mq? probably we shoulld just add another mq
+            current_page.injectline('',current_line_number).span.focus();
+            mathLineify()
+          } else {
+            var orig_line = current_page.lines[current_line_number];
+            var orig_line_num = current_line_number
+            var position = getCaretPosition(orig_line.span[0]);
+            var left_text= orig_line.span.text().substring(0,position);
+            var right_text= orig_line.span.text().substring(position);
+            var next_line=current_page.injectline("",orig_line_num)
+            orig_line.span.blur()
+            next_line.span.text(right_text).focus();
+            orig_line.span.empty().text(left_text);
+          }
+        }
+      }
       ((/*Keybindings*/)=>{
-        //To explain the next ~200 lines of code, there are two jquery functions
-        // that occour on keypresses, so i use those for keybindings. a lot of
-        //code is copy pasted because the flowcharts for each button are
-        //different. current_line_number is false if nothing is focused,
-        //otherwise it is a number
+        //To explain this anon function, there are two jquery functions
+        //that occour on keypresses, so i use those for keybindings. a lot of
+        //code (if statements) is copy pasted from other keys here because the
+        //flowcharts for movement between boxes is somewhat similar between directions.
         $("body").on("keydown",function(e){
-          if(override_event){//useful for MQ
-            override_event=false;
+          if(loading===true){//this stops typing during loading
+            e.preventDefault()
+            return;
+          }
+          if(disable_keybinds===true){//useful for MQ
+            disable_keybinds=false;
             e.preventDefault();
             return;
           }
           if(e.ctrlKey){
-            formatted=true;
+            text_formatted=true;
             if (debug_version) {
-              console.log(`key ${e.keycode} pressed`)
+              console.log(`key ${e.keyCode} pressed`)
             }
             if(e.keyCode==66){//ctrl b
-              e.preventDefault();
+              e.preventDefault();//stops some text from bolding with chrome's built in editor
               if (current_line_number !== false ) { //this means that a line is selected
                 if(!current_page.lines[current_line_number].isMQ){
                   current_page.lines[current_line_number].format.bold.change();
                 }
               }
             } else if(e.keyCode==73){//ctrl + i
+              e.preventDefault();
               if (current_line_number !== false ) { //this means that a line is selected
                 if(!current_page.lines[current_line_number].isMQ){
                   current_page.lines[current_line_number].format.italics.change();
                 }
               }
             } else {
-              formatted=false;
+              text_formatted=false;
               if (e.keyCode==83) {//save
                 if(current_file_path==""){
                   saveAs(()=>{});
@@ -383,10 +482,10 @@
                   save();
                 }
               } else if (e.keyCode==80){//print
-                $(".print-pdf").trigger("click")
+                $(".print-pdf").trigger("click")//admittedly this is lazy, but the electron print to pdf example is really confusing
               }
             }
-            if(formatted){
+            if(text_formatted){//if text is changed, we need to get rid of inline html tags (<b></b>)becasue they make formatting inconsistent.
               if(current_line_number!==false){
                 line = current_page.lines[current_line_number];
                 if (line.isMQ) {
@@ -394,12 +493,12 @@
                 } else {
                   if(line.span.children().length>0){
                     line.span.html(line.span.html().replace(/<\/?\w+((\s+\w+(\s*=\s*(?:".*?"|'.*?'|[\^'">\s]+))?)+\s*|\s*)\/?>/g,""))
-                    //this matches any html tag and removes it. this stops any browser formatting
+                    //this matches any html tag and removes it. this is nessesary bec sometimes browsers format a part of a line. this was taken from stackoverflow.
                   }
                 }
               }
             }
-            if (e.keyCode==79){//open 15
+            if (e.keyCode==79){//ctrl + O
               openFile();
             }
           }
@@ -533,20 +632,26 @@
             if (current_line_number !== false ) { //this means that a line is selected
               var line = current_page.lines[current_line_number]
               if(line.isMQ){
-                //mq is handled within the mathquill library
+                //mq is handled within the mathquill library, so we can safley ignore this.
               } else { //is cursor @ beginning?
                 if(getCaretPosition(line.span[0])==0){//are we at beginning of text?
+                  e.preventDefault()
                   if(current_line_number!=0){//don't want to delete whole page
                     var preceding_line = current_page.lines[current_line_number-1];
                     if (preceding_line.isMQ) {
-                      //so what we need to do is focus it
-                      preceding_line.MQ.focus()
-                      preceding_line.MQ.moveToRightEnd()
+                      //if the current line is not empty, dont do anytihng. if it is empty, delete it!
+                      if(line.span.text().length == 0){
+                        current_page.lines.splice(current_line_number,1);//now remove old line
+                        line.span.remove();//delete it from doc
+                        line.dom.remove();
+                        preceding_line.MQ.focus()
+                        preceding_line.MQ.moveToRightEnd()
+                      }
                     } else {
                       var text = line.span.text();
                       var preceding_line_text = preceding_line.span.text()
-                      var new_cursor_pos = preceding_line_text.length+1;
-                      preceding_line.span.text(preceding_line_text+"@"+text);//add this lines text to the last line. the extra char is because we don't want to override the deleting action
+                      var new_cursor_pos = preceding_line_text.length;
+                      preceding_line.span.text(preceding_line_text+text);//add this lines text to the last line. the extra char is because we don't want to override the deleting action
                       current_page.lines.splice(current_line_number,1);//now remove old line
                       line.span.remove();//delete it from doc
                       line.dom.remove();
@@ -576,111 +681,23 @@
             keypress is generally better than the alternative but you
              cant overide backspace with it
           */
+          if(loading===true){//this stops typing during loading
+            e.preventDefault()
+            return;
+          }
           if(e.which === 13 && !e.ctrlKey /*enter*/ ){
-            event.preventDefault()
-            if (debug_version) {
-              console.log("ENTER PRESSED:\n\n\nline:"+current_line_number)
-            }
-            if (current_line_number !== false ) { //this means that a line is selected
-              if(current_page.lines[current_line_number].isMQ){
-                //what does happen if the current line is mq? probably we shoulld just add another mq
-                current_page.injectline('',current_line_number).span.focus();
-                e.which=12;//this is a lazy way of running mathquillify because it's the next if statement
-              } else {
-                var orig_line = current_page.lines[current_line_number];
-                var orig_line_num = current_line_number
-                var position = getCaretPosition(orig_line.span[0]);
-                var left_text= orig_line.span.text().substring(0,position);
-                var right_text= orig_line.span.text().substring(position);
-                var next_line=current_page.injectline("",orig_line_num)
-                orig_line.span.blur()
-                next_line.span.text(right_text).focus();
-                orig_line.span.empty().text(left_text);
-              }
-            }
+            e.preventDefault()//potential trouble
+            breakLine();//it just chops off the right side of text and adds it to a new line.
           }
           if (e.which == 12){//ctrl + l means mathquillify or demathquillify. this is so long because we have to keep the array ordered
             e.preventDefault()
-            console.log("M");//this means it was pressed. this is usefull for debugging.
-            if (current_line_number !== false ) {
-              var line = current_page.lines[current_line_number];
-              if (line.isMQ) {
-                var hold_line_number = current_line_number //this value gets modified during some operations
-                line.MQ.revert()
-                var text = line.span.text();
-                var newline=current_page.injectline("normal",current_line_number)//inject a line after current one
-                current_page.lines.splice(hold_line_number,1)//remove that old line from the list
-                line.span.remove()//and from the document
-                line.dom.remove()
-                newline.span.text(text);//give it correct text
-                newline.span.focus()//focus it
-              } else {
-                console.log("Q");//this is used to detect focus problems
-                line.format.clear();
-                // line.dom.addClass("double-line").removeClass("single-line")
-                var text = line.span.text();
-                line.span.text("").attr("contentEditable",false);
-                line.MQ = mathquillify(line.span);
-                // setTimeout(()=>{line.MQ.focus()},0)
-                line.MQ.destroy=line.MQ.revert
-                line.MQ.revert=()=>{
-                  var latex = line.MQ.latex()
-                  line.MQ.destroy();
-                  line.span.removeClass("mq-focused").addClass("monospace")
-                  line.span.text(latex)
-                  make_editable(line.span);
-                  line.span.focus();
-                }
-                text=text.replace("+-","\\pm")//convienence things
-                text=text.replace("\\sqrt","sqrt")
-                text=text.replace("sqrt","\\sqrt")
-                text=text.replace("\\pi","pi")
-                text=text.replace("pi","\\pi")
-                for (var i = 0; i < text.length; i++) {
-                  if(text[i]==" "){
-                    line.MQ.keystroke("Spacebar");
-                  } else {
-                    line.MQ.typedText(text[i]);
-                  }
-                }
-                line.isMQ=true;//this allows for easy distinction between text and math lines
-                var this_page=current_page
-                line.span.set_active = function() {
-                  current_line_number=line.getNumber()
-                  if (debug_version) {
-                    console.log("focus: "+line.getNumber())
-                  }
-                  current_page=this_page;
-                }
-                line.span.set_inactive = function() {
-                  self_line_number=line.getNumber()
-                  if(current_line_number==self_line_number){
-                    if (debug_version) {
-                      console.log("de focus: "+current_line_number)
-                    }
-                    current_line_number=false;
-                  };
-                }
-                line.bind=function(){
-                  line.span.find(".mq-textarea").find("textarea").bind('focus',line.span.set_active);
-                  line.span.find(".mq-textarea").find("textarea").bind('blur',line.span.set_inactive);
-                };line.bind()
-
-                line.MQ.focus();
-              }
-            }
+            mathLineify()
           }
           if(e.which==14){//ctrl + n creates a new page
             new_page();
           }
-          if (e.which==11) {//ctrl and k changes size from 2 to 1 or from 1 to 2
-            if (current_line_number !== false ) {
-              var line = current_page.lines[current_line_number];
-              line.dom.toggleClass("double-line").toggleClass("single-line")
-            }
-          }
         });
-      })();
+      })();//END OF KEYBINDNINGS FUNCTOIN.
       var current_line_number=false//this global variable is either false if no line is selected or a number if one is
       var current_page=false//same here
       var pages = []; //global var
@@ -736,6 +753,7 @@
             Yes, this code is not in use right now, but you can manually make a
             highlited line using either the console or manually opening the json
             file with something like notepad.
+            The reason I havent implemented it is because ctrl + h currently hides things.
           */
           status:0,
           dom:dom.find("span"),
@@ -797,7 +815,8 @@
         /*
          *  this is actually an object constructer. its complicated-- sometimes
          *  we need to add a line after a line and other times we don't have any
-         *  line to add it to.
+         *  line to add it to. this makes it difficult to make just one constructer
+         *  because we sometimes need to inject after an html thing, and other times before..
          */
         var tempid = Math.floor(Math.random()*Math.pow(2,16))
         /*
@@ -817,17 +836,17 @@
         make_editable(this.span)
       }
       function Line(dom){//todo: separate span and div
-        var tempid = Math.floor(Math.random()*Math.pow(2,16))
-        dom.append('<div align="left" class="id'+tempid+' single-line"></div>')
-        this.dom = $(".id"+tempid);
-        this.dom.removeClass("id"+tempid)
+        var tempid = Math.floor(Math.random()*Math.pow(2,16))//this is just a saftey feature.
+        dom.append('<div align="left" class="id'+tempid+' single-line"></div>')//the container for the line
+        this.dom = $(".id"+tempid);//the div
+        this.dom.removeClass("id"+tempid)//remove id
         this.dom.append("<span class='monospace editable id"+tempid+"'></span>")
         this.dom.addClass("line")
         this.span=$(".id"+tempid);
         this.span.removeClass("id"+tempid)
         this.isMQ=false;
         this.format=new Formatting(this.dom);
-        make_editable(this.span)
+        make_editable(this.span)//this sets up some stuff so we always know the current line
       }
       function Page(){
         var tempid = Math.floor(Math.random()*Math.pow(2,16))
@@ -900,20 +919,13 @@
         this.addline();
         this.lines[0].span.focus()
       }
-      var new_page =()=>{
-        pages.push(new Page())
-      }
-      var insert_line_on_page =(page_num)=>{//legacy function. use Page.addline or page.injectline
-        var line_num = pages[page_num].internal_divs.length;
-        pages[page_num].dom.append('<div align="left" id="pg'+page_num+'ln'+line_num+'" class="editable single-line"><span></span></div>')
-        var line_dom = $('#pg'+page_num+'ln'+line_num)
-        pages[page_num].internal_divs.push({dom:line_dom,internal_spans:[]})
-        make_editable(line_dom)
-      }
+      var new_page =()=>{pages.push(new Page())}
       make_editable($(".editable"))
-      var save_to_json=()=>{
+      var save_to_json=()=>{//used to convert entire file to a string. doesnt actually save to filesystem
         var file = {title_text:$("#title-box").text(),pages:[],has_font_for_mq:true}
-        // file.focus={line:current_line_number,page:pages.indexOf(current_page)}
+        if(current_line_number!==false){
+          file.focus={line:current_line_number,page:pages.indexOf(current_page)}
+        }
         for (var i = 0; i < pages.length; i++) {
           file.pages[i]=[];
           for (var j = 0; j < pages[i].lines.length; j++) {
@@ -939,6 +951,7 @@
         alert("Just type things.\nPress ctrl + L to toggle math mode,\nPress ctrl + N for a new page.\nCtrl + B(old), Ctrl + I(talics) to format a line of text\nCtrl + K makes a large line\nYou can rename the title if you click on it.","Help")
       }
       var load_from_json=(instring)=>{
+        loading=true
         $(".open-file").removeClass("btn-primary").addClass("btn-info").text("Processing...")
         setTimeout(()=>{//to allow proper rendering
           pages=[];
@@ -960,13 +973,7 @@
               current_line_number=j;
               line=pages[i].lines[j];
               if(file.pages[i][j].isMQ){//Broken rihgt now, and it kinda defeats the purpose of the whole program :/
-                var mathquill_event = jQuery.Event("keypress");
-                mathquill_event.which=12;
-                $("body").trigger(mathquill_event)/*
-                  we just convert the thing to mathquill using the preexising
-                  code. It would make more sense to use a function but this
-                  also works.
-                */
+                mathLineify()
                 line.MQ.latex(file.pages[i][j].text)
                 if (global_override_mq_autofit) {
                   line.dom.removeClass("single-line").addClass(sizes[file.pages[i][j].div_size])
@@ -981,6 +988,19 @@
           setTimeout(()=>{
             global_override_mq_autofit=false;
             $(".open-file").addClass("btn-success").removeClass("btn-info").text("Loaded!");
+            if(file.focus != undefined){
+              console.log(file.focus)
+              var line = pages[file.focus.page].lines[file.focus.line]
+              if(line.isMQ){
+                line.MQ.focus()
+              } else {
+                line.span.focus()
+              }
+              $('html, body').animate({
+                scrollTop: line.dom.offset().top-200
+              }, 100);
+            }
+            loading=false;
             setTimeout(()=>{
               $(".open-file").removeClass("btn-success").addClass("btn-primary").text("Open");
             },3000)
@@ -1019,7 +1039,7 @@
           ipc.send('backup_path', current_file_path)
         },20000)
       },10000)//this stops overwriting
-      var ping = setInterval(()=>{
+      var ping = setInterval(()=>{//used to detect crashes that occour when mathqill bugs out. this was made back when those were really common, but it still comes in handy
         ipc.send("ping",true)
       },3000)
       var current_file_path = "";
@@ -1046,7 +1066,7 @@
         dialog.showSaveDialog({ filters: [
           { name: 'Notebook', extensions: ['jsonbook'] }
         ]},function (fileName) {
-          if (fileName === undefined) return;
+          if (fileName === undefined) return;//user hit cancel
           current_file_path=fileName;
           fs.writeFile(fileName, save_to_json(), function (err) {
             if (err == undefined) {
@@ -1060,13 +1080,13 @@
           });
         });
       }
-      function openFile () {
+      function openFile () {//open the dialog box and then actually load it
         dialog.showOpenDialog({ filters: [
           { name: 'Notebook', extensions: ['jsonbook'] }
         ]},function (fileNames) {
           if (fileNames === undefined) return;
           current_file_path=fileNames[0]
-          var fileName = fileNames[ 0];
+          var fileName = fileNames[0];
           fs.readFile(fileName, 'utf-8', function (err, data) {
             load_from_json(data)
             ipc.send('backup_path', current_file_path)
