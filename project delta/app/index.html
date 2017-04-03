@@ -23,8 +23,8 @@
     delete window.module;
     </script>
     <script src="assets/jquery/dist/jquery.min.js" type="text/javascript"></script>
-    <link rel="stylesheet" href="assets/bootstrap-3.3.7-dist/css/bootstrap.css"></script>
-    <script src="assets/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="assets/bootstrap-4.0.0-alpha.6-dist/css/bootstrap.min.css"></script>
+    <script src="assets/bootstrap-4.0.0-alpha.6-dist/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="assets/mathquill-0.10.1/mathquill.css"></script>
     <script src="assets/mathquill-0.10.1/mathquill.min.js"></script>
     <link rel="stylesheet" type="text/css" href="core_styles.css">
@@ -32,27 +32,55 @@
     <!-- done with the Loading of ALL THE THINGS! -->
   </head>
   <body class ="bamboo">
-    <div class="hat" id="hat">
-      <div align="center" id="large_menu" class="btn-group-vertical  col-sm-3 hidden-xs" style="padding:10px">
-          <button type="button" onclick="new_page()" class="btn btn-primary btn-block btn-default">New Page</button>
-          <button type="button" onclick="help()" class="btn btn-primary btn-block btn-default">Help</button>
-          <button type="button" onclick="" class="btn btn-primary print-pdf btn-block btn-default">Print</button>
+    <div class="hat row" id="hat">
+      <div align="center" id="large_menu" class="btn-group-vertical col-sm-3 hidden-xs-down" style="padding:10px">
+        <button type="button" onclick="new_page()" class="btn btn-primary btn-block btn-default">New Page</button>
+        <button type="button" onclick="help()" class="btn btn-primary btn-block btn-default">Help</button>
+        <button type="button" onclick="" class="btn btn-primary print-pdf btn-block btn-default">Print</button>
       </div>
       <div align="center" class="col-sm-6 col-xs-12">
         <h1 id="title-box" class="editable" align="center">Title</h1>
       </div>
-      <div align="center" class="btn-group-vertical col-sm-3 col-xs-4" style="padding:10px">
-        <button type="button" onclick="openFile()" class="open-file btn btn-primary btn-block btn-default">Open</button>
-        <button type="button" onclick="saveAs(()=>{});" class="btn btn-primary btn-block btn-default">Save As</button>
-        <button type="button" onclick="save()" class="quicksave hidden-xs btn btn-primary btn-block btn-default">Save</button>
+      <div align="center" class="btn-group-vertical hidden-xs-down col-sm-3" style="padding:10px">
+        <button type="button" onclick="openFile()" class="open-file btn btn-primary btn-default">Open</button>
+        <button type="button" onclick="saveAs(()=>{});" class="btn btn-primary btn-default">Save As</button>
+        <button type="button" onclick="save()" class="quicksave hidden-xs-down btn btn-primary btn-block btn-default">Save</button>
       </div>
-      <div align="center" class="btn-group-vertical hidden-sm hidden-lg hidden-md col-xs-4" style="padding:10px">
-        <button type="button" onclick="save()" class="quicksave btn btn-primary btn-block btn-default">Save</button>
-        <button type="button" onclick="new_page()" class="btn btn-primary btn-block btn-default">New Page</button>
+      <div class="hidden-sm-up col-xs-4" style="width:33%">
+        <div align="center" class="btn-group-vertical btn-block" style="padding:10px">
+          <button type="button" onclick="openFile()" class=" open-file btn btn-primary btn-default">Open</button>
+          <button type="button" onclick="saveAs(()=>{});" class=" btn btn-primary btn-default">Save As</button>
+        </div>
       </div>
-      <div align="center" class="btn-group-vertical hidden-sm hidden-lg hidden-md col-xs-4" style="padding:10px">
-        <button type="button" onclick="help()" class="btn btn-primary btn-block btn-default">Help</button>
-        <button type="button" onclick="" class="btn btn-primary btn-block btn-default">Print</button>
+      <div class="hidden-sm-up col-xs-4" style="width:33%">
+        <div align="center" class="btn-group-vertical btn-block" style="padding:10px">
+          <button type="button" onclick="save()" class=" quicksave btn btn-primary">Save</button>
+          <button type="button" onclick="new_page()" class=" btn btn-primary btn-default">New Page</button>
+        </div>
+      </div>
+      <div class="hidden-sm-up col-xs-4" style="width:33%">
+        <div align="center" class="btn-group-vertical btn-block" style="padding:10px">
+          <button type="button" onclick="help()" class=" btn btn-primary btn-default">Help</button>
+          <button type="button" onclick="" class=" btn btn-primary btn-default">Print</button>
+        </div>
+      </div>
+      <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Alert</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              ...
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" onclick="modal_open=false" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     </div>
@@ -92,6 +120,17 @@
           }
         }
         return oldsize;
+      }
+      var modal_open=false
+      var cool_alert =(contents,title)=>{
+        contents=contents.replace("\n","")
+        if(!modal_open){
+          modal_open=true;
+          var modal = $(".modal");
+          modal.find(".modal-title").text(title);
+          modal.find(".modal-body").text(contents);
+          $(".modal").modal({backdrop:false});
+        }
       }
       var auto_adjust_mathquill =(selector)=>{//this automatically fixes a mathquill object to make it take up as few lines as possible without having too small of a font
         var div_container = selector.parent()
@@ -948,7 +987,7 @@
         return JSON.stringify(file);
       }
       var help=()=>{
-        alert("Just type things.\nPress ctrl + L to toggle math mode,\nPress ctrl + N for a new page.\nCtrl + B(old), Ctrl + I(talics) to format a line of text\nCtrl + K makes a large line\nYou can rename the title if you click on it.","Help")
+        cool_alert("Just type things.\nPress ctrl + L to toggle math mode,\nPress ctrl + N for a new page.\nCtrl + B(old), Ctrl + I(talics) to format a line of text\nCtrl + K makes a large line\nYou can rename the title if you click on it.","Help")
       }
       var load_from_json=(instring)=>{
         loading=true
@@ -1008,6 +1047,7 @@
         },10)
       }
     </script>
+
     <script>
       require = window.nodeRequire
       var   remote          =  require('electron').remote;
