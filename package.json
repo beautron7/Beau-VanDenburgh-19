@@ -1,0 +1,15 @@
+{
+  "name": "Project-Delta",
+  "version": "0.1.0",
+  "private": true,
+  "main": "electron ./src",
+  "dependencies": {
+    "bootstrap": "^3.3.7",
+    "electron": "^1.6.11",
+    "jquery": "3.1.1",
+    "mathquill": "^0.10.1-a"
+  },
+  "scripts": {
+    "start": "electron ./src"
+  }
+}

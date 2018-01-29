@@ -1,0 +1,942 @@
+<!--
+  The entire application is just 1 html file right now.
+  I have tried to comment my code sufficiently
+  but i want this to actually make progress and not end up
+  being some perfect piece of code that literally does
+  nothing, so it may look messy
+  Use a synax higlighter if you want to stay sane.
+
+  this is a long term project and i don't periodically
+  clean up old code, so some stuff may actually be useless
+  It's a bad practice, but i would rather it work.
+ -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Template</title>
+    <script>
+    const ipc = require('electron').ipcRenderer
+    window.nodeRequire = require;
+    delete window.require;
+    delete window.exports;
+    delete window.module;
+    </script>
+    <script src="../node_modules/jquery/dist/jquery.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.css"></script>
+    <script src="../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="../node_modules/mathquill/build/mathquill.css"></script>
+    <script src="../node_modules/mathquill/build/mathquill.min.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="core_styles.css">
+    <link rel="stylesheet" href="print.css">
+    <!-- done with the Loading of ALL THE THINGS! -->
+  </head>
+  <body class="bamboo">
+    <div class="hat" id="hat">
+      <div align="center" id="large_menu" class="btn-group-vertical  col-sm-3 hidden-xs" style="padding:10px">
+          <button type="button" onclick="new_page()" class="btn btn-primary btn-block btn-default">New Page</button>
+          <button type="button" onclick="help()" class="btn btn-primary btn-block btn-default">Help</button>
+          <button type="button" onclick="" class="btn btn-primary print-pdf btn-block btn-default">Print</button>
+      </div>
+      <div align="center" class="col-sm-6 col-xs-12">
+        <h1 id="title-box" class="editable" align="center">Title</h1>
+      </div>
+      <div align="center" class="btn-group-vertical col-sm-3 col-xs-4" style="padding:10px">
+        <button type="button" onclick="openFile()" class="open-file btn btn-primary btn-block btn-default">Open</button>
+        <button type="button" onclick="saveAs(()=>{});" class="btn btn-primary btn-block btn-default">Save As</button>
+        <button type="button" onclick="save()" class="quicksave hidden-xs btn btn-primary btn-block btn-default">Save</button>
+      </div>
+      <div align="center" class="btn-group-vertical hidden-sm hidden-lg hidden-md col-xs-4" style="padding:10px">
+        <button type="button" onclick="save()" class="quicksave btn btn-primary btn-block btn-default">Save</button>
+        <button type="button" onclick="new_page()" class="btn btn-primary btn-block btn-default">New Page</button>
+      </div>
+      <div align="center" class="btn-group-vertical hidden-sm hidden-lg hidden-md col-xs-4" style="padding:10px">
+        <button type="button" onclick="help()" class="btn btn-primary btn-block btn-default">Help</button>
+        <button type="button" onclick="" class="btn btn-primary btn-block btn-default">Print</button>
+      </div>
+    </div>
+    </div>
+    <div class="background"></div>
+    <div class="top-spacer"></div>
+    <div id="sheets"></div>
+    <div class="top-spacer"></div>
+    <script>
+      var loading = false;
+      var disable_keybinds = false;
+
+      var mathquillify =(selector)=> {
+        /*
+          mathqill is a library that makes typing math easy. mathquillify
+          converts a line of text into a mathquill field. before you critique me
+          for using a wierd name, the authors of the library use this term.
+        */
+        selector.removeClass("monospace")   //this fixes some font issues
+        var mathFieldSpan = selector[0]     //jquery -> plain old javascript
+        var MQ = MathQuill.getInterface(2); // Devs of MQ say this is needed for backcompatibility. works fine like this.
+        var mathField = MQ.MathField(mathFieldSpan, {
+          spaceBehavesLikeTab: true, // configurable
+          autoCommands: 'pi theta sqrt sum to iff int',//these are autoconverted to their symbols
+          handlers: {
+            moveOutOf:function(){//when we use the arrows to move out of this feild, these functions are called. they allow for page traversal
+              disable_keybinds=true;
+              if(arguments[0]==-1){
+                if (current_line_number !== false ) {   //this means that a line is selected. there is no situation where this should trigger, but its better to be safe then sorry
+                  if(current_line_number==0){           //first line
+                    //If we are on the first line and try to move to the previous, what should happen? TBD.
+                  } else {//anything else
+                    var newline =current_page.lines[current_line_number-1];
+                    if(newline.isMQ){
+                      newline.MQ.focus();
+                      newline.MQ.moveToRightEnd()
+                    } else {
+                      newline.span.focus();
+                      setCaretPosition(newline.span[0],newline.span.text().length)
+                    }
+                  }
+                }
+              } else {//ok, we are moving forward
+                if(current_line_number==current_page.lines.length-1){//last line
+                  //tbd
+                } else {
+                  var newline =current_page.lines[current_line_number+1];
+                  if(newline.isMQ){
+                    newline.MQ.focus();
+                  } else {
+                    newline.span.focus();
+                  }
+                }
+              }
+            },
+            deleteOutOf:function (direction) {//see moveoutof for explanation
+              if (direction == 1) {//delete key
+                if (current_line_number !== false ) { //this means that a line is selected
+                  var line = current_page.lines[current_line_number]
+                  if(line.MQ.latex()==""){//stops accidentla deletion
+                    if(current_line_number==current_page.lines.length-1){
+                      //if it's the last line, don't delete!
+                    } else {
+                      var next_line = current_page.lines[current_line_number+1];
+                      current_page.lines.splice(current_line_number,1)
+                      line.MQ.revert()
+                      line.dom.remove()
+                      line.span.remove()
+                      if (next_line.isMQ) {
+                        next_line.MQ.focus()
+                        next_line.MQ.moveToLeftEnd()
+                      } else {
+                        next_line.span.focus()
+                        setCaretPosition(next_line.span[0],0)//sets the cursor in the right spot
+                      }
+                    }
+                  }
+                }
+              } else {//backspace key
+                if (current_line_number !== false ) { //this means that a line is selected
+                  var line = current_page.lines[current_line_number]
+                  if(line.MQ.latex()==""){//stops accidentla deletion
+                    if(current_line_number==0){
+                      //if it's the first line, don't delete!
+                    } else {
+                      var preceding_line = current_page.lines[current_line_number-1];
+                      current_page.lines.splice(current_line_number,1)
+                      line.MQ.revert()
+                      line.dom.remove()
+                      line.span.remove()
+                      if (preceding_line.isMQ) {
+                        preceding_line.MQ.focus()
+                        preceding_line.MQ.moveToRightEnd()
+                      } else {
+                        preceding_line.span.focus()
+                        setCaretPosition(preceding_line.span[0],preceding_line.span.text().length)//sets the cursor in the right spot
+                      }
+                    }
+                  }
+                }
+              }
+              disable_keybinds=true;//this stops the next keypress in  the /*keybindings*/ function.
+            },
+            upOutOf:function () {
+              disable_keybinds=true;
+              if (current_line_number !== false ) { //this means that a line is selected. this sould work under all circumstances
+                if(current_line_number==0){//first line
+                  //TBD
+                } else {//anything else
+                  var newline =current_page.lines[current_line_number-1];
+                  if(newline.isMQ){
+                    newline.MQ.focus();
+                    newline.MQ.moveToRightEnd()
+                  } else {
+                    newline.span.focus();
+                  }
+                }
+              }
+            },
+            downOutOf:function () {
+              disable_keybinds=true;
+              if(current_line_number==current_page.lines.length-1){//last line
+                //tbd
+              } else {
+                var newline =current_page.lines[current_line_number+1];
+                if(newline.isMQ){
+                  newline.MQ.focus();
+                  newline.MQ.moveToLeftEnd()
+                } else {
+                  newline.span.focus();
+                }
+              }
+            }
+          }
+        });
+        return mathField
+      }
+      var getCaretPosition =(element)=> {//gets the cursor position. stolen from stackoverflow.
+        var caretOffset = 0;
+        var doc = element.ownerDocument || element.document;
+        var win = doc.defaultView || doc.parentWindow;
+        var sel;
+        if (typeof win.getSelection != "undefined") {
+          sel = win.getSelection();
+          if (sel.rangeCount > 0) {
+            var range = win.getSelection().getRangeAt(0);
+            var preCaretRange = range.cloneRange();
+            preCaretRange.selectNodeContents(element);
+            preCaretRange.setEnd(range.endContainer, range.endOffset);
+            caretOffset = preCaretRange.toString().length;
+          }
+        } else if ( (sel = doc.selection) && sel.type != "Control") {
+          var textRange = sel.createRange();
+          var preCaretTextRange = doc.body.createTextRange();
+          preCaretTextRange.moveToElementText(element);
+          preCaretTextRange.setEndPoint("EndToEnd", textRange);
+          caretOffset = preCaretTextRange.text.length;
+        }
+        return caretOffset;
+      }
+      var setCaretPosition =(el, pos)=> { //sets the cursor position. also stolen from stackoverflow.
+        for(var node of el.childNodes){
+          if(node.nodeType == 3){ // we have a text node
+            if(node.length >= pos){
+              // finally add our range
+              var range = document.createRange(),
+              sel = window.getSelection();
+              range.setStart(node,pos);
+              range.collapse(true);
+              sel.removeAllRanges();
+              sel.addRange(range);
+              return -1; // we are done
+            }else{
+              pos -= node.length;
+            }
+          }else{
+            pos = setCaretPosition(node,pos);
+            if(pos == -1){
+              return -1; // no need to finish the for loop
+            }
+          }
+        }
+        return pos; // needed because of recursion stuff
+      }
+      var mathLineify=()=>{//used to toggle whether or not somethings a mathline
+        console.log("M");//this means it was pressed. this is usefull for debugging.
+        if (current_line_number !== false ) {
+          var line = current_page.lines[current_line_number];
+          if (line.isMQ) {
+            var hold_line_number = current_line_number //this value gets modified during some operations
+            line.MQ.revert()
+            var text = line.span.text();
+            var newline=current_page.injectline("normal",current_line_number)//inject a line after current one
+            current_page.lines.splice(hold_line_number,1)//remove that old line from the list
+            line.span.remove()//and from the document
+            line.dom.remove()
+            newline.span.text(text);//give it correct text
+            newline.span.focus()//focus it
+          } else {
+            console.log("Q");//this is used to detect focus problems
+            line.format.clear();
+            // line.dom.addClass("double-line").removeClass("single-line")
+            var text = line.span.text();
+            line.span.text("").attr("contentEditable",false);
+            line.MQ = mathquillify(line.span);
+            // setTimeout(()=>{line.MQ.focus()},0)
+            line.MQ.destroy=line.MQ.revert;
+            line.MQ.revert=()=>{
+              var latex = line.MQ.latex();
+              line.MQ.destroy();
+              line.span.removeClass("mq-focused").addClass("monospace");
+              line.span.text(latex);
+              make_editable(line.span);
+              line.span.focus();
+            }
+            text=text.replace("+-","\\pm");//convienence things. this is where eventually things like fraction conversion will be handled
+            text=text.replace("\\sqrt","sqrt");
+            text=text.replace("sqrt","\\sqrt");
+            text=text.replace("\\pi","pi");
+            text=text.replace("pi","\\pi");
+            for (var i = 0; i < text.length; i++) {
+              if(text[i]==" "){
+                line.MQ.keystroke("Spacebar");
+              } else {
+                line.MQ.typedText(text[i]);
+              }
+            }
+            line.isMQ=true;//this allows for easy distinction between text and math lines
+            var this_page=current_page;
+            line.span.set_active = function() {
+              current_line_number=line.getNumber();
+              current_page=this_page;
+            }
+            line.span.set_inactive = function() {
+              self_line_number=line.getNumber();
+              if(current_line_number==self_line_number){
+                current_line_number=false;
+              };
+            }
+            line.bind=function(){
+              line.span.find(".mq-textarea").find("textarea").bind('focus',line.span.set_active);
+              line.span.find(".mq-textarea").find("textarea").bind('blur',line.span.set_inactive);
+            };
+            line.bind();
+            line.MQ.focus();
+          }
+        }
+      }
+      var breakLine=()=>{
+        if (current_line_number !== false ) { //this means that a line is selected
+          if(current_page.lines[current_line_number].isMQ){
+            //what does happen if the current line is mq? probably we shoulld just add another mq
+            current_page.injectline('',current_line_number).span.focus();
+            mathLineify()
+          } else {
+            var orig_line = current_page.lines[current_line_number];
+            var orig_line_num = current_line_number
+            var position = getCaretPosition(orig_line.span[0]);
+            var left_text= orig_line.span.text().substring(0,position);
+            var right_text= orig_line.span.text().substring(position);
+            var next_line=current_page.injectline("",orig_line_num)
+            orig_line.span.blur()
+            next_line.span.text(right_text).focus();
+            orig_line.span.empty().text(left_text);
+          }
+        }
+      }
+      ((/*Keybindings*/)=>{
+        //To explain this anon function, there are two jquery functions
+        //that occour on keypresses, so i use those for keybindings. a lot of
+        //code (if statements) is copy pasted from other keys here because the
+        //flowcharts for movement between boxes is somewhat similar between directions.
+        $("body").on("keydown",function(e){
+          if(e.keyCode==9){
+            if (current_line_number !== false ) { //this means that a line is selected
+              if(!current_page.lines[current_line_number].isMQ){
+                e.preventDefault();
+                var pos = getCaretPosition(current_page.lines[current_line_number].span[0]);
+                var html = current_page.lines[current_line_number].span.html();
+                current_page.lines[current_line_number].span.html("&nbsp;&nbsp;&nbsp;"+html);
+                setCaretPosition(current_page.lines[current_line_number].span[0],pos+3)
+              }
+            }
+          }
+          if(loading===true){//this stops typing during loading
+            e.preventDefault()
+            return;
+          }
+          if(disable_keybinds===true){//useful for MQ
+            disable_keybinds=false;
+            e.preventDefault();
+            return;
+          }
+          if(e.ctrlKey){
+            text_formatted=true;
+            if(e.keyCode==66){//ctrl b
+              e.preventDefault();//stops some text from bolding with chrome's built in editor
+              if (current_line_number !== false ) { //this means that a line is selected
+                if(!current_page.lines[current_line_number].isMQ){
+                  current_page.lines[current_line_number].format.bold.change();
+                }
+              }
+            } else if(e.keyCode==73){//ctrl + i
+              e.preventDefault();
+              if (current_line_number !== false ) { //this means that a line is selected
+                if(!current_page.lines[current_line_number].isMQ){
+                  current_page.lines[current_line_number].format.italics.change();
+                }
+              }
+            } else {
+              text_formatted=false;
+              if (e.keyCode==83) {//save
+                if(current_file_path==""){
+                  saveAs(()=>{});
+                } else {
+                  save();
+                }
+              } else if (e.keyCode==80){//print
+                $(".print-pdf").trigger("click")//admittedly this is lazy, but the electron print to pdf example is really confusing
+              }
+            }
+            if(text_formatted){//if text is changed, we need to get rid of inline html tags (<b></b>)becasue they make formatting inconsistent.
+              if(current_line_number!==false){
+                line = current_page.lines[current_line_number];
+                if (line.isMQ) {
+                  //its ok
+                } else {
+                  if(line.span.children().length>0){
+                    line.span.html(line.span.html().replace(/<\/?\w+((\s+\w+(\s*=\s*(?:".*?"|'.*?'|[\^'">\s]+))?)+\s*|\s*)\/?>/g,""))
+                    //this matches any html tag and removes it. this is nessesary bec sometimes browsers format a part of a line. this was taken from stackoverflow.
+                  }
+                }
+              }
+            }
+            if (e.keyCode==79){//ctrl + O
+              openFile();
+            }
+          }
+          if(e.keyCode==37){//left
+            if (current_line_number !== false ) { //this means that a line is selected
+              var oldline =current_page.lines[current_line_number]
+              if(oldline.isMQ){//mq is diferent
+              } else { //is cursor @ beginning of line
+                if(getCaretPosition(oldline.span[0])==0){//are we at beginning of text?
+                  if(current_line_number!=0){//we move to previous line only if there is one
+                    var preceding_line = current_page.lines[current_line_number-1];
+                    if (preceding_line.isMQ) {
+                      preceding_line.MQ.focus()
+                      preceding_line.moveToRightEnd()
+                    } else {
+                      preceding_line.span.focus()
+                      setCaretPosition(preceding_line.span[0],preceding_line.span.text().length)//sets the cursor in the right spot
+                      e.preventDefault()
+                    }
+                  }
+                }
+              }
+            }
+          }
+          if(e.keyCode==46){//delete
+            if (current_line_number !== false ) { //this means that a line is selected
+              var line = current_page.lines[current_line_number]
+              if(line.isMQ){
+                //mq is handled within the mathquill library
+              } else { //is cursor @ beginning?
+                if(getCaretPosition(line.span[0])==line.span.text().length){//are we at end of text?
+                  if(current_line_number!=current_page.lines.length-1){//cant delete end of line
+                    var next_line = current_page.lines[current_line_number+1];
+                    if (next_line.isMQ) {
+                      if (line.span.text().length==0){
+                        e.preventDefault();
+                        current_page.lines.splice(current_line_number,1);//now remove this line
+                        line.span.remove();
+                        line.dom.remove();
+                        next_line.MQ.focus();
+                        next_line.MQ.moveToLeftEnd()
+                      }
+                    } else {
+                      current_page.lines.splice(current_line_number+1,1);//now remove old line
+                      var next_line_text = next_line.span.text()
+                      var self_text = line.span.text()
+                      e.preventDefault();
+                      line.span.text(self_text+next_line_text);//add this lines text to the last line. the extra char is because we don't want to override the deleting action
+                      next_line.span.remove();//delete it from doc
+                      next_line.dom.remove();
+                      setCaretPosition(line.span[0],self_text.length)
+                    }
+                  }
+                }
+              }
+            }
+          }
+          if(e.keyCode==38){//up
+            if (current_line_number !== false ) { //this means that a line is selected
+              var oldline =current_page.lines[current_line_number]
+              if(oldline.isMQ){
+                //mq is diferent, only switch if the cursor doesn't move
+              } else { //is cursor @ beginning of line
+                if(current_line_number!=0){//we move to previous line only if there is one
+                  var preceding_line = current_page.lines[current_line_number-1];
+                  if (preceding_line.isMQ) {
+                    preceding_line.MQ.focus()
+                    preceding_line.MQ.moveToRightEnd
+                  } else {
+                    var cursorpos = getCaretPosition(oldline.span[0])
+                    var maxpos=current_page.lines[current_line_number-1].span.text().length
+                    if(maxpos<cursorpos){
+                      cursorpos=maxpos
+                    }
+                    setCaretPosition(preceding_line.span[0],cursorpos)//sets the cursor in the right spot
+                    preceding_line.span.focus()
+                    e.preventDefault()
+                  }
+                }
+              }
+            }
+          }
+          if(e.keyCode==39){//right
+            if (current_line_number !== false ) { //this means that a line is selected
+              var oldline =current_page.lines[current_line_number]
+              if(oldline.isMQ){//mq is diferent
+              } else { //is cursor @ beginning of line
+                if(getCaretPosition(oldline.span[0])==oldline.span.text().length){//are we at end of text?
+                  if(current_line_number!=current_page.lines.length-1){//we move to previous line only if there is one
+                    var next_line = current_page.lines[current_line_number+1];
+                    if (next_line.isMQ) {
+                      next_line.MQ.focus()
+                      next_line.MQ.moveToLeftEnd()
+                    } else {
+                      next_line.span.focus()
+                      setCaretPosition(next_line.span[0],0)//sets the cursor in the right spot
+                      e.preventDefault()
+                    }
+                  }
+                }
+              }
+            }
+          }
+          if(e.keyCode==40){//down
+            if (current_line_number !== false ) { //this means that a line is selected
+              var line = current_page.lines[current_line_number];
+              if (current_page.lines[current_line_number].isMQ) {
+                //let MQ lib handle this instead for more accuracy w fractions
+              } else {
+                if(current_line_number==current_page.lines.length-1){
+                  //don't override
+                } else {
+                  e.preventDefault()
+                  var next_line=current_page.lines[current_line_number+1];
+                  if(next_line.isMQ){
+                    next_line.MQ.focus()
+                    next_line.MQ.moveToLeftEnd()
+                  } else {
+                    var cursorpos = getCaretPosition(line.span[0])
+                    var maxpos=next_line.span.text().length
+                    if(maxpos<cursorpos){
+                      cursorpos=maxpos
+                    }
+                    setCaretPosition(current_page.lines[current_line_number+1].span[0],cursorpos)
+                  }
+                }
+              }
+            }
+          }
+          if(e.keyCode==8) {//backspace
+            if (current_line_number !== false ) { //this means that a line is selected
+              var line = current_page.lines[current_line_number]
+              if(line.isMQ){
+                //mq is handled within the mathquill library, so we can safley ignore this.
+              } else { //is cursor @ beginning?
+                if(getCaretPosition(line.span[0])==0){//are we at beginning of text?
+                  e.preventDefault()
+                  if(current_line_number!=0){//don't want to delete whole page
+                    var preceding_line = current_page.lines[current_line_number-1];
+                    if (preceding_line.isMQ) {
+                      //if the current line is not empty, dont do anytihng. if it is empty, delete it!
+                      if(line.span.text().length == 0){
+                        current_page.lines.splice(current_line_number,1);//now remove old line
+                        line.span.remove();//delete it from doc
+                        line.dom.remove();
+                        preceding_line.MQ.focus()
+                        preceding_line.MQ.moveToRightEnd()
+                      }
+                    } else {
+                      var text = line.span.text();
+                      var preceding_line_text = preceding_line.span.text()
+                      var new_cursor_pos = preceding_line_text.length;
+                      preceding_line.span.text(preceding_line_text+text);//add this lines text to the last line. the extra char is because we don't want to override the deleting action
+                      current_page.lines.splice(current_line_number,1);//now remove old line
+                      line.span.remove();//delete it from doc
+                      line.dom.remove();
+                      preceding_line.span.focus()
+                      setCaretPosition(preceding_line.span[0],new_cursor_pos)//sets the cursor in the right spot
+                    }
+                  } else {
+                    if(current_page.lines.length==1){
+                      if (line.span.text().length==0) {
+                        if (pages.indexOf(current_page)!=0) {
+                          pages.splice(pages.indexOf(current_page),1)
+                          line.span.remove()
+                          line.dom.parent().remove()
+                          line.dom.remove();
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        })
+        $("body").on('keypress', function (e) {
+          /*
+            we use two differetnt types of binding because
+            keypress is generally better than the alternative but you
+             cant overide backspace with it
+          */
+          if(loading===true){//this stops typing during loading
+            e.preventDefault()
+            return;
+          }
+          if(e.which === 13 && !e.ctrlKey /*enter*/ ){
+            e.preventDefault()//potential trouble
+            breakLine();//it just chops off the right side of text and adds it to a new line.
+          }
+          if (e.which == 12){//ctrl + l means mathquillify or demathquillify. this is so long because we have to keep the array ordered
+            e.preventDefault()
+            mathLineify()
+          }
+          if(e.which==14){//ctrl + n creates a new page
+            new_page();
+          }
+        });
+      })();//END OF KEYBINDNINGS FUNCTOIN.
+      var current_line_number=false//this global variable is either false if no line is selected or a number if one is
+      var current_page=false//same here
+      var pages = []; //global var
+      var make_editable =(dom)=>{//this just helps jquery know when somehting is clicked by autofocusing it.
+        dom.bind('click', function() {
+          $(this).focus()
+        })
+        dom.attr("contentEditable",true)
+      }
+      function Formatting(){
+        dom = arguments[0]//we must bind the formatting to an element
+        this.dom        = dom;
+        this.bold       = {
+          status:false,
+          dom:dom,
+          change:function () {
+            if (!this.status) {
+              this.dom.css("font-weight","Bold")
+              this.status=true;
+            } else {
+              this.dom.css("font-weight","")
+              this.status=false;
+            }
+          }
+        }
+        this.italics    = {
+          status:false,
+          dom:dom,
+          change:function () {
+            if (!this.status) {
+              this.dom.css("font-style","italic")
+              this.status=true;
+            } else {
+              this.dom.css("font-style","")
+              this.status=false;
+            }
+          }
+        }
+        this.underline  = {
+          /*
+            Yes, this code is not in use right now, but you can manually make an
+            underlined line using either the console or manually opening the json
+            file with something like notepad.
+          */
+          status:false,
+          change:function () {
+            //TBD.
+          },
+          dom:null,
+        }
+        this.highlight  = {
+          /*
+            Yes, this code is not in use right now, but you can manually make a
+            highlited line using either the console or manually opening the json
+            file with something like notepad.
+            The reason I havent implemented it is because ctrl + h currently hides things.
+          */
+          status:0,
+          dom:dom.find("span"),
+          names:[
+            "none",
+            "red",
+            "orange",
+            "yellow",
+            "green",
+            "cyan",
+            "blue",
+          ],
+          values:[
+            "#FFFFFF",
+            "#FF0000",
+            "#FF8000",
+            "#FFFF00",
+            "#00FF00",
+            "#00FFFF",
+            "#0000FF",
+          ],
+          change:function(value){
+            if(typeof value == "string"){
+              value = this.names.indexOf(value);
+            }
+            this.status=value
+            this.dom.css("background-color",this.values[value])
+          }
+        }
+        this.clear=()=>{//resets formatting
+          this.bold.status = true;
+          this.bold.change();//sets it to the opposite, then changes it
+          this.highlight.change(0)
+          this.italics.status = true;
+          this.italics.change();
+          this.underline.status = true;
+          this.underline.change();
+        }
+        this.dump=()=>({//dumps an object containing color data
+          bold:this.bold.status,
+          highlight:this.highlight.status,
+          underline:this.underline.status,
+          italics:this.italics.status
+        })
+        if(arguments.length>1){//arguments[1] is a dump
+          if (typeof arguments[1]!==undefined) {
+            var params=arguments[1];
+            this.bold.status = !params.bold;
+            this.bold.change();//sets it to the opposite, then changes it
+            this.highlight.change(params.highlight)
+            this.italics.status = !params.italics;
+            this.italics.change();
+            // this.underline.status = !params.underline;
+            // this.underline.change();
+          }
+        }
+      }
+      function InjectLineAfter(line_x_dom){
+        /*
+         *  this is actually an object constructer. its complicated-- sometimes
+         *  we need to add a line after a line and other times we don't have any
+         *  line to add it to. this makes it difficult to make just one constructer
+         *  because we sometimes need to inject after an html thing, and other times before..
+         */
+        var tempid = Math.floor(Math.random()*Math.pow(2,16))
+        /*
+         *  ok yes techincally you could have this run simletaneously and get
+         *  two similar random numberss and have all hell break loose, but this is
+         *  sufficent
+         */
+        line_x_dom.after('<div align="left" class="id'+tempid+' single-line"></div>')
+        this.dom = $(".id"+tempid);
+        this.dom.removeClass("id"+tempid)
+        this.dom.addClass("line")
+        this.dom.append("<span class='monospace editable id"+tempid+"'></span>")
+        this.span=$(".id"+tempid);
+        this.span.removeClass("id"+tempid)
+        this.format=new Formatting(this.dom);
+        this.isMQ=false;
+        make_editable(this.span)
+      }
+      function Line(dom){//todo: separate span and div
+        var tempid = Math.floor(Math.random()*Math.pow(2,16))//this is just a saftey feature.
+        dom.append('<div align="left" class="id'+tempid+' single-line"></div>')//the container for the line
+        this.dom = $(".id"+tempid);//the div
+        this.dom.removeClass("id"+tempid)//remove id
+        this.dom.append("<span class='monospace editable id"+tempid+"'></span>")
+        this.dom.addClass("line")
+        this.span=$(".id"+tempid);
+        this.span.removeClass("id"+tempid)
+        this.isMQ=false;
+        this.format=new Formatting(this.dom);
+        make_editable(this.span)//this sets up some stuff so we always know the current line
+      }
+      function Page(){
+        var tempid = Math.floor(Math.random()*Math.pow(2,16))
+        $("#sheets").append('<div class="id'+tempid+' outerpaper" align="center"><div class="innerpaper" align="left">')
+        this.dom=$(".id"+tempid)
+        this.dom.removeClass("id"+tempid)
+        this.lines=[];
+        this.injectline=(type,original_line_number)=>{
+          var this_line = new InjectLineAfter(this.lines[original_line_number].dom);
+          this.lines.splice(original_line_number+1, 0, this_line);
+          if (this_line!=this.lines[original_line_number+1]) {
+            throw "error in array splicing!";
+          }
+          var line_dom = this_line.span;
+          this_line.getNumber=()=>(
+            this_page.lines.indexOf(this_line)
+          )
+          var this_page= this;
+          this_line.set_active = function() {
+            current_line_number=this_line.getNumber()
+            current_page=this_page;
+          }
+          this_line.set_inactive = function() {
+            self_line_number=this_line.getNumber()
+            if(current_line_number==self_line_number){
+              current_line_number=false;
+            };
+          }
+          this_line.bind=function(){
+            this.span.bind('focus',this_line.set_active);
+            this.span.bind('blur',this_line.set_inactive);
+          };this_line.bind()
+          return this_line
+        }
+        this.addline=(type)=>{
+          this.lines.push(new Line(this.dom))
+          var this_line=this.lines[this.lines.length-1]
+          var line_dom = this_line.span;
+          this_line.getNumber=()=>(
+            this_page.lines.indexOf(this_line)
+          )
+          var this_page= this;
+          this_line.set_active = function() {
+            current_line_number=this_line.getNumber()
+            current_page=this_page;
+          }
+          this_line.set_inactive = function() {
+            self_line_number=this_line.getNumber()
+            if(current_line_number==self_line_number){
+              current_line_number=false;
+            };
+          }
+          this_line.bind=function(){
+            this.span.bind('focus',this_line.set_active);
+            this.span.bind('blur',this_line.set_inactive);
+          };this_line.bind()
+        }
+        this.addline();
+        this.lines[0].span.focus()
+      }
+      var new_page =()=>{pages.push(new Page())}
+      make_editable($(".editable"))
+      var save_to_json=()=>{//used to convert entire file to a string. doesnt actually save to filesystem
+        var file = {title_text:$("#title-box").text(),pages:[]}
+        for (var i = 0; i < pages.length; i++) {
+          file.pages[i]=[];
+          for (var j = 0; j < pages[i].lines.length; j++) {
+            if(pages[i].lines[j].isMQ){
+              file.pages[i][j]={
+                isMQ:true,
+                text:pages[i].lines[j].MQ.latex(),
+              }
+            } else {
+              file.pages[i][j]={
+                isMQ:false,
+                text:pages[i].lines[j].span.text(),
+                formatting:pages[i].lines[j].format.dump()
+              }
+            }
+          }
+        }
+        return JSON.stringify(file);
+      }
+      var help=()=>{
+        alert("Just type things.\nPress ctrl + L to toggle math mode,\nPress ctrl + N for a new page.\nCtrl + B(old), Ctrl + I(talics) to format a line of text\nCtrl + K makes a large line\nYou can rename the title if you click on it.","Help")
+      }
+      var load_from_json=(instring)=>{
+        loading=true
+        $(".open-file").removeClass("btn-primary").addClass("btn-info").text("Processing...")
+        setTimeout(()=>{//to allow proper rendering
+          pages=[];
+          $("#sheets").empty()
+          file = JSON.parse(instring);
+          $("#title-box").text(file.title_text)
+          for (var i = 0; i < file.pages.length; i++) {
+            new_page();
+            current_page=pages[i];
+            current_page.lines[0].span.remove()
+            current_page.lines[0].dom.remove()
+            current_page.lines=[];
+            for (var j = 0; j < file.pages[i].length; j++) {
+              pages[i].addline();
+              current_line_number=j;
+              line=pages[i].lines[j];
+              if(file.pages[i][j].isMQ){//Broken rihgt now, and it kinda defeats the purpose of the whole program :/
+                mathLineify()
+                line.MQ.latex(file.pages[i][j].text);
+              } else {
+                line.span.text(file.pages[i][j].text);
+                line.format=new Formatting(line.dom,file.pages[i][j].formatting);
+              }
+            }
+          }
+          setTimeout(()=>{
+            global_override_mq_autofit=false;
+            $(".open-file").addClass("btn-success").removeClass("btn-info").text("Loaded!");
+            loading=false;
+            setTimeout(()=>{
+              $(".open-file").removeClass("btn-success").addClass("btn-primary").text("Open");
+            },3000)
+          },500)
+        },10)
+      }
+    </script>
+    <script>
+      require = window.nodeRequire
+      var   remote          =  require('electron').remote;
+      var   dialog          =  remote.dialog;
+      var   fs              =  require('fs'); // require only if you don't already have it
+      var   sendMSG=(thing) => {ipc.send('sendMSG', thing)}
+      {
+        const printPDFBtn   =  $('.print-pdf')
+        printPDFBtn.on('click', function (event) {
+          ipc.send('print-to-pdf')
+        })
+        ipc.on('wrote-pdf', function (event, path) {
+          $('.print-pdf').text("Success!").addClass("btn-success").removeClass("btn-primary");
+          setTimeout(()=>{
+            $('.print-pdf').text("Print").removeClass("btn-success").addClass("btn-primary");
+          },3000)
+        })
+        ipc.on('string', (event, message) => {
+          if (message=="save") {
+            saveAs((success)=>{sendMSG("save_"+success)});
+          }
+        });
+      }
+      var current_file_path = "";
+      function save (){
+        fs.writeFile(current_file_path, save_to_json(), function (err) {
+          if (err == undefined) {
+            $(".quicksave").addClass("btn-success").removeClass("btn-primary").text("Saved!")
+            setTimeout(()=>{
+              $(".quicksave").removeClass("btn-success").addClass("btn-primary").text("Save")
+            },3000)
+          } else {
+            if (current_file_path=="") {
+              saveAs()
+            } else {
+              var button = $(".quicksave").addClass("btn-danger").removeClass("btn-primary").text("ERROR")
+              setTimeout(()=>{
+                $(".quicksave").removeClass("btn-danger").addClass("btn-primary").text("Save")
+              },3000);
+            }
+          }
+        });
+      }
+      function saveAs (callback) {
+        dialog.showSaveDialog({ filters: [
+          { name: 'Notebook', extensions: ['jsonpage'] }
+        ]},function (fileName) {
+          if (fileName === undefined) return;//user hit cancel
+          current_file_path=fileName;
+          fs.writeFile(fileName, save_to_json(), function (err) {
+            if (err == undefined) {
+              ipc.send('backup_path', current_file_path)
+              alert("The file has been saved")
+              callback(true);
+            } else {
+              alert(err.message,"File Save Error");
+              callback(false);
+            }
+          });
+        });
+      }
+      function openFile () {//open the dialog box and then actually load it
+        dialog.showOpenDialog({ filters: [
+          { name: 'Notebook', extensions: ['jsonpage','jsonbook'] }
+        ]},function (fileNames) {
+          if (fileNames === undefined) return;
+          if(fileNames[0].slice(-8) !=="jsonbook"){
+            current_file_path=fileNames[0]
+          }
+          var fileName = fileNames[0];
+          ipc.send('currentPath', fileNames[0]);
+          fs.readFile(fileName, 'utf-8', function (err, data) {
+            load_from_json(data)
+            ipc.send('backup_path', current_file_path)
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

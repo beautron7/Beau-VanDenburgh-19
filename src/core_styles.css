@@ -1,0 +1,73 @@
+/* var.mq-operator-name + var.mq-operator-name + var.mq-operator-name + span.mq-supsub{
+  position: relative;
+  top: 10px;
+  right: 40px;
+} */
+
+.monospace {
+	font-family: Consolas, monaco, monospace;
+}
+.bamboo {
+  background-image: url('assets/img/bamboo-wood-texture.jpg');
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+/*0.694*/
+.hat {
+  background: rgba(200, 200, 200,0.9);
+  position: fixed;
+	width: 16cm;
+	max-width: 90%;
+  top: 30px;
+	right: 0;
+	left: 0;
+	margin-left: auto;
+	margin-right: auto;
+	z-index: 256
+}
+.sm-hat{
+	background: rgba(200, 200, 200, 0.9);
+  margin: 0px;
+  position: fixed;
+	width: 90%;
+  top: 30px;
+  left:50%;
+  margin-left: -45%;
+}
+.mq-editable-field{
+  max-width: 100%;
+  max-height: 100%;
+  margin-top: 0;
+  padding-top: 0;
+  vertical-align: top;
+  border: none;
+}
+.mq-root-block{
+  vertical-align: top;
+  margin-top: 0;
+  padding-top: 0;
+  border: none;
+}
+.outerpaper{
+	margin: 10px;
+	padding: 10px;
+	min-height: 50%;
+	width: calc(100%-20px);
+	background-color: #dfd;
+}
+.line{
+	overflow: hidden;
+  background-color: rgba(255,255,255,0.9);
+	border-bottom-style: solid;
+	border-bottom-color: rgba(0,0,255,0.9);
+	border-bottom-width: 0.03cm
+}
+.single-line{
+	display: block;
+  min-height:0.6792cm;
+	min-width: 100%;
+  font-size: 20px;
+}
+.top-spacer{
+  margin:3cm;
+}
