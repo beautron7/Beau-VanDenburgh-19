@@ -1,5 +1,13 @@
 {
-  "name"    : "project-delta",
-  "version" : "1.4.3",
-  "main"    : "main.js"
+  "name": "project-delta",
+  "version": "1.4.3",
+  "main": "main.js",
+  "dependencies": {
+    "bootstrap": "^3.3.7",
+    "jquery": "3.1.1",
+    "mathquill": "^0.10.1-a"
+  },
+  "scripts": {
+    "postinstall": "npm install electron-builder -g"
+  }
 }

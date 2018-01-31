@@ -1,15 +1,18 @@
 {
   "name": "Project-Delta",
-  "version": "0.1.0",
+  "description": "Use MathQuill to type out notes for math",
+  "version": "1.0.0",
   "private": true,
+  "author": "Beau <beauvandenburgh19@newmanschool.org>",
   "main": "electron ./src",
   "dependencies": {
-    "bootstrap": "^3.3.7",
     "electron": "^1.6.11",
-    "jquery": "3.1.1",
-    "mathquill": "^0.10.1-a"
+    "electron-packager": "^10.1.2",
+    "project-delta": "file:src"
   },
   "scripts": {
-    "start": "electron ./src"
+    "start": "electron ./src",
+    "build": "node ./src/build.js",
+    "postinstall": "cd src && npm install"
   }
 }

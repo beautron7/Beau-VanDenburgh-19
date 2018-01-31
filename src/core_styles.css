@@ -41,6 +41,7 @@
   padding-top: 0;
   vertical-align: top;
   border: none;
+  min-width:100%;
 }
 .mq-root-block{
   vertical-align: top;
