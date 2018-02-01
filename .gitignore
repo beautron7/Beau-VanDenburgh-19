@@ -1,3 +1,8 @@
 node_modules
 build
 src/node_modules
+
+project-delta.wixobj
+project-delta.wixpdb
+project-delta.wxs
+project-delta.msi
