@@ -1,6 +1,7 @@
 {
   "name": "project-delta",
   "version": "1.4.3",
+  "main": "main.js",
   "dependencies": {
     "bootstrap": "^3.3.7",
     "jquery": "3.1.1",
