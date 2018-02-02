@@ -1,25 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<DOCUMENT Type="Advanced Installer" CreateVersion="14.5.2" version="14.5.2" Modules="professional" RootPath="." Language="en" Id="{1DF99985-124B-456C-839D-0C8D13C3EE99}">
+<DOCUMENT Type="Advanced Installer" CreateVersion="14.5.2" version="14.5.2" Modules="simple" RootPath="." Language="en" Id="{47837FD7-4181-4925-9721-0ECBD12EFF15}">
   <COMPONENT cid="caphyon.advinst.msicomp.ProjectOptionsComponent">
-    <ROW Name="HiddenItems" Value="AppXAppDetailsComponent;AppXCapabilitiesComponent;AppXDependenciesComponent;AppXProductDetailsComponent;AppXVisualAssetsComponent;AppXAppDeclarationsComponent;AppXUriRulesComponent"/>
+    <ROW Name="HiddenItems" Value="AppXProductDetailsComponent;AppXDependenciesComponent;AppXAppDetailsComponent;AppXVisualAssetsComponent;AppXCapabilitiesComponent;AppXAppDeclarationsComponent;AppXUriRulesComponent;MsiThemeComponent;BackgroundImagesComponent;UpdaterComponent;SerValComponent;DigCertStoreComponent;MsiInstExSeqComponent;DictionaryComponent;MsiAppSearchComponent;MsiAssemblyComponent;MsiClassComponent;MsiOdbcDataSrcComponent;MsiServInstComponent;MsiOrgComponent;MsiExtComponent;CPLAppletComponent;ActSyncAppComponent;PreReqComponent;WebApplicationsComponent;TilesComponent;MsiJavaComponent;MsiDriverPackagesComponent;UserAccountsComponent;ScheduledTasksComponent;SqlConnectionComponent;AutorunComponent;FirewallExceptionComponent;GameUxComponent;MsiDirectEditorComponent;SharePointSlnComponent;SilverlightSlnComponent;MultipleInstancesComponent;SccmComponent;TilesComponent"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiPropsComponent">
     <ROW Property="AI_BITMAP_DISPLAY_MODE" Value="0"/>
-    <ROW Property="AI_ThemeStyle" Value="aero" MultiBuildValue="DefaultBuild:classic" MsiKey="AI_ThemeStyle"/>
     <ROW Property="ALLUSERS" Value="1"/>
-    <ROW Property="ARPCOMMENTS" Value="This installer database contains the logic and data required to install [|ProductName]." ValueLocId="*"/>
-    <ROW Property="ARPHELPLINK" Value="github.com/beautron7/project-delta"/>
     <ROW Property="ARPNOMODIFY" MultiBuildValue="DefaultBuild:1"/>
     <ROW Property="ARPNOREPAIR" Value="1"/>
+    <ROW Property="ARPPRODUCTICON" Value="icon.exe" Type="8"/>
     <ROW Property="ARPURLINFOABOUT" Value="github.com/beautron7/project-delta"/>
-    <ROW Property="ARPURLUPDATEINFO" Value="github.com/beautron7/project-delta"/>
     <ROW Property="Manufacturer" Value="Triversal LLC"/>
-    <ROW Property="ProductCode" Value="1033:{616664F5-39C3-459D-8343-F381202EA78C} " Type="16"/>
+    <ROW Property="ProductCode" Value="1033:{96F851FF-2704-4637-A2FE-412347AB29F9} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
     <ROW Property="ProductName" Value="Project Delta"/>
     <ROW Property="ProductVersion" Value="1.0.0" Type="32"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND"/>
-    <ROW Property="UpgradeCode" Value="{E2D92C86-8AE6-411C-9489-94AA0FB4630E}"/>
+    <ROW Property="UpgradeCode" Value="{BA2C704C-D3D8-4506-9DBF-C0337DE215D8}"/>
     <ROW Property="WindowsType9X" MultiBuildValue="DefaultBuild:Windows 9x/ME" ValueLocId="-"/>
     <ROW Property="WindowsType9XDisplay" MultiBuildValue="DefaultBuild:Windows 9x/ME" ValueLocId="-"/>
     <ROW Property="WindowsTypeNT40" MultiBuildValue="DefaultBuild:Windows NT 4.0" ValueLocId="-"/>
@@ -32,7 +29,6 @@
   <COMPONENT cid="caphyon.advinst.msicomp.MsiDirsComponent">
     <ROW Directory="APPDIR" Directory_Parent="TARGETDIR" DefaultDir="APPDIR:." IsPseudoRoot="1"/>
     <ROW Directory="DesktopFolder" Directory_Parent="TARGETDIR" DefaultDir="DESKTO~1|DesktopFolder" IsPseudoRoot="1"/>
-    <ROW Directory="ProgramMenuFolder" Directory_Parent="TARGETDIR" DefaultDir="PROGRA~1|ProgramMenuFolder" IsPseudoRoot="1"/>
     <ROW Directory="StartMenuFolder" Directory_Parent="TARGETDIR" DefaultDir="STARTM~1|StartMenuFolder" IsPseudoRoot="1"/>
     <ROW Directory="TARGETDIR" DefaultDir="SourceDir"/>
     <ROW Directory="app_Dir" Directory_Parent="resources_Dir" DefaultDir="app"/>
@@ -53,67 +49,67 @@
     <ROW Directory="resources_Dir" Directory_Parent="APPDIR" DefaultDir="RESOUR~1|resources"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiCompsComponent">
-    <ROW Component="ProductInformation" ComponentId="{CFD99767-1E36-4AD1-A9FE-49BC89BB2FBC}" Directory_="APPDIR" Attributes="4" KeyPath="Version"/>
-    <ROW Component="Symbolabasic.eot" ComponentId="{7B615736-E6BC-4FE1-BA47-9C796AD89C01}" Directory_="font_Dir" Attributes="0" KeyPath="Symbolabasic.eot" Type="0"/>
-    <ROW Component="am.pak" ComponentId="{0D920BD2-2E63-496D-ADA2-FF561F22A41D}" Directory_="locales_Dir" Attributes="0" KeyPath="am.pak" Type="0"/>
-    <ROW Component="apimswincoreconsolel110.dll" ComponentId="{4176F1EC-0979-4F8A-BC91-8012CEA3A78A}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincoreconsolel110.dll"/>
-    <ROW Component="apimswincoredatetimel110.dll" ComponentId="{B318AAFC-9985-4EAC-8FEB-F3E8403D5BAC}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincoredatetimel110.dll"/>
-    <ROW Component="apimswincoredebugl110.dll" ComponentId="{9C929543-93DD-40F6-9833-363D4A3EB430}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincoredebugl110.dll"/>
-    <ROW Component="apimswincoreerrorhandlingl110.dll" ComponentId="{BCB57407-3AA3-4E8F-9F11-2FDF55B2FB3F}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincoreerrorhandlingl110.dll"/>
-    <ROW Component="apimswincorefilel110.dll" ComponentId="{A91F4F03-ABEC-40F8-BEDF-0937FE9E6221}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincorefilel110.dll"/>
-    <ROW Component="apimswincorefilel120.dll" ComponentId="{55650FEA-E1BD-4F26-97DC-D2F59E957181}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincorefilel120.dll"/>
-    <ROW Component="apimswincorefilel210.dll" ComponentId="{C1D329F5-ED3F-48A7-953D-124B2792157F}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincorefilel210.dll"/>
-    <ROW Component="apimswincorehandlel110.dll" ComponentId="{74789E02-C271-41E8-99D2-978AEA787E7F}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincorehandlel110.dll"/>
-    <ROW Component="apimswincoreheapl110.dll" ComponentId="{C369479F-7D5C-4A78-99BF-0AC03D2DDFCE}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincoreheapl110.dll"/>
-    <ROW Component="apimswincoreinterlockedl110.dll" ComponentId="{17698AEE-8F34-4C4B-9295-4DC7C0DA6165}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincoreinterlockedl110.dll"/>
-    <ROW Component="apimswincorelibraryloaderl110.dll" ComponentId="{734FBB14-6ED9-46B4-B149-BF97BD86719A}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincorelibraryloaderl110.dll"/>
-    <ROW Component="apimswincorelocalizationl120.dll" ComponentId="{047587B0-6E08-406F-8952-A44D33C86BA4}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincorelocalizationl120.dll"/>
-    <ROW Component="apimswincorememoryl110.dll" ComponentId="{F7BC3186-E22F-413C-A3ED-1183CB33CC0B}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincorememoryl110.dll"/>
-    <ROW Component="apimswincorenamedpipel110.dll" ComponentId="{4F45EC5B-10A3-41EF-88C4-B6590921F515}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincorenamedpipel110.dll"/>
-    <ROW Component="apimswincoreprocessenvironmentl110.dll" ComponentId="{B94FA624-AF26-4D44-A8AB-0A877C00AE1E}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincoreprocessenvironmentl110.dll"/>
-    <ROW Component="apimswincoreprocessthreadsl110.dll" ComponentId="{2C8C3A84-DA2E-4E3F-9E03-40F528323A2F}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincoreprocessthreadsl110.dll"/>
-    <ROW Component="apimswincoreprocessthreadsl111.dll" ComponentId="{71D91396-492C-49B8-B772-B8120B1DB059}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincoreprocessthreadsl111.dll"/>
-    <ROW Component="apimswincoreprofilel110.dll" ComponentId="{B2BC890B-D757-4C54-9EDE-174D5B6DA66D}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincoreprofilel110.dll"/>
-    <ROW Component="apimswincorertlsupportl110.dll" ComponentId="{DFEB480A-CC4A-409C-AE2D-694375B1F1F4}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincorertlsupportl110.dll"/>
-    <ROW Component="apimswincorestringl110.dll" ComponentId="{582CA65E-0A21-4548-B115-25EAA7FECE59}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincorestringl110.dll"/>
-    <ROW Component="apimswincoresynchl110.dll" ComponentId="{FDA2C3D8-6667-4694-8F3F-9477F0F874EA}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincoresynchl110.dll"/>
-    <ROW Component="apimswincoresynchl120.dll" ComponentId="{A8AEBE09-4C13-4B86-8B1A-94175E1B5B64}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincoresynchl120.dll"/>
-    <ROW Component="apimswincoresysinfol110.dll" ComponentId="{D1FD5B22-5886-4B1B-8FDE-AA6060BF9EEF}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincoresysinfol110.dll"/>
-    <ROW Component="apimswincoretimezonel110.dll" ComponentId="{A41578B8-FAA3-4005-A16D-D94404A6CB22}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincoretimezonel110.dll"/>
-    <ROW Component="apimswincoreutill110.dll" ComponentId="{CF9513DB-F504-44EA-83AF-0695C953E1F4}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincoreutill110.dll"/>
-    <ROW Component="apimswincrtconiol110.dll" ComponentId="{18DAD269-97B4-465F-89F1-02C49CEA6FD3}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincrtconiol110.dll"/>
-    <ROW Component="apimswincrtconvertl110.dll" ComponentId="{EA2838A1-BB81-414E-9C8B-0BE1A75C98A5}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincrtconvertl110.dll"/>
-    <ROW Component="apimswincrtenvironmentl110.dll" ComponentId="{08E4E28D-FE21-4FA5-85AE-156ADA76041F}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincrtenvironmentl110.dll"/>
-    <ROW Component="apimswincrtfilesysteml110.dll" ComponentId="{5A332348-3C7E-4E93-95ED-FC99C5531B4E}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincrtfilesysteml110.dll"/>
-    <ROW Component="apimswincrtheapl110.dll" ComponentId="{B7648F87-3D65-47FC-908A-7FBE20252F70}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincrtheapl110.dll"/>
-    <ROW Component="apimswincrtlocalel110.dll" ComponentId="{3D571EF2-9866-41BE-826D-033949236F20}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincrtlocalel110.dll"/>
-    <ROW Component="apimswincrtmathl110.dll" ComponentId="{66E5F219-F664-42DA-93E7-05F3CA8C06C2}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincrtmathl110.dll"/>
-    <ROW Component="apimswincrtmultibytel110.dll" ComponentId="{91B3A825-6749-4BCA-9450-5987AF8E6D28}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincrtmultibytel110.dll"/>
-    <ROW Component="apimswincrtprivatel110.dll" ComponentId="{2B046BC6-FD66-48AC-9DCE-82B16BC4A62F}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincrtprivatel110.dll"/>
-    <ROW Component="apimswincrtprocessl110.dll" ComponentId="{2D579434-CF31-46D1-AA65-19DB2AC83E57}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincrtprocessl110.dll"/>
-    <ROW Component="apimswincrtruntimel110.dll" ComponentId="{8A31C648-B41A-46BB-AC14-B03B3FFA9E80}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincrtruntimel110.dll"/>
-    <ROW Component="apimswincrtstdiol110.dll" ComponentId="{02BC34A1-3F92-4AB5-A14F-C9D24F5C4C11}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincrtstdiol110.dll"/>
-    <ROW Component="apimswincrtstringl110.dll" ComponentId="{03E5583D-4371-4F5D-8CE5-704AC1D8396E}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincrtstringl110.dll"/>
-    <ROW Component="apimswincrttimel110.dll" ComponentId="{BE93AC24-BEB6-4B88-BF0B-9C0DF1BADF53}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincrttimel110.dll"/>
-    <ROW Component="apimswincrtutilityl110.dll" ComponentId="{0E196D54-5C99-41C6-9EE8-D3705BB1ECAD}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincrtutilityl110.dll"/>
-    <ROW Component="bamboowoodtexture.jpg" ComponentId="{93B750CE-2502-4600-8E8F-027057EB2C7A}" Directory_="img_Dir" Attributes="0" KeyPath="bamboowoodtexture.jpg" Type="0"/>
-    <ROW Component="blink_image_resources_200_percent.pak" ComponentId="{095A802B-F05F-4EE5-951A-DEF1C1EDA420}" Directory_="APPDIR" Attributes="0" KeyPath="blink_image_resources_200_percent.pak" Type="0"/>
-    <ROW Component="bootstrap.js" ComponentId="{6583B21E-E0E8-42D2-BA2D-20CC6E9B3668}" Directory_="js_Dir" Attributes="0" KeyPath="bootstrap.js" Type="0"/>
-    <ROW Component="bootstraptheme.css" ComponentId="{D9864F9C-67F3-4483-AE2D-1B87ED018AB1}" Directory_="css_Dir" Attributes="0" KeyPath="bootstraptheme.css" Type="0"/>
-    <ROW Component="core.js" ComponentId="{04FD0FEC-A179-473D-B8BE-F8B4AC083198}" Directory_="dist_1_Dir" Attributes="0" KeyPath="core.js" Type="0"/>
-    <ROW Component="core_styles.css" ComponentId="{48797DA2-C22B-4505-A448-41C5858DF887}" Directory_="app_Dir" Attributes="0" KeyPath="core_styles.css" Type="0"/>
-    <ROW Component="d3dcompiler_47.dll" ComponentId="{EBA1E153-15FB-4863-AB34-BE8A59D93E86}" Directory_="APPDIR" Attributes="256" KeyPath="d3dcompiler_47.dll"/>
-    <ROW Component="electron.asar" ComponentId="{61545815-23F2-4DAD-A2B4-6E2C44920D75}" Directory_="resources_Dir" Attributes="0" KeyPath="electron.asar" Type="0"/>
-    <ROW Component="ffmpeg.dll" ComponentId="{6AE4B5B8-D6A1-421F-AC69-1008FDFE50F7}" Directory_="APPDIR" Attributes="256" KeyPath="ffmpeg.dll"/>
-    <ROW Component="glyphiconshalflingsregular.eot" ComponentId="{7F23C35C-8BB0-4F44-B102-8761538FD37C}" Directory_="fonts_Dir" Attributes="0" KeyPath="glyphiconshalflingsregular.eot" Type="0"/>
-    <ROW Component="libEGL.dll" ComponentId="{50CD91E2-4528-42F9-A231-1CFAC5B18C16}" Directory_="APPDIR" Attributes="256" KeyPath="libEGL.dll"/>
-    <ROW Component="libGLESv2.dll" ComponentId="{D3FC2D46-76C3-400C-879C-E70610DBCB69}" Directory_="APPDIR" Attributes="256" KeyPath="libGLESv2.dll"/>
-    <ROW Component="mathquill.css" ComponentId="{94E1EC2A-1ACE-4EAA-A554-82A37EAC8A29}" Directory_="build_Dir" Attributes="0" KeyPath="mathquill.css" Type="0"/>
-    <ROW Component="msvcp140.dll" ComponentId="{B5F4FC38-9E00-458A-B5FF-E29F7013D93C}" Directory_="APPDIR" Attributes="256" KeyPath="msvcp140.dll"/>
-    <ROW Component="node.dll" ComponentId="{B537D3D8-2444-4000-8615-B6088EB7BB3C}" Directory_="APPDIR" Attributes="256" KeyPath="node.dll"/>
-    <ROW Component="projectdelta.exe" ComponentId="{6DC1B230-0252-4BC5-866F-515051363395}" Directory_="APPDIR" Attributes="256" KeyPath="projectdelta.exe"/>
-    <ROW Component="ucrtbase.dll" ComponentId="{0EB022D2-C815-47E4-9404-4902CE1924F0}" Directory_="APPDIR" Attributes="256" KeyPath="ucrtbase.dll"/>
-    <ROW Component="vcruntime140.dll" ComponentId="{BEA5B147-1B02-427E-BCCD-D61A66B71B15}" Directory_="APPDIR" Attributes="256" KeyPath="vcruntime140.dll"/>
+    <ROW Component="ProductInformation" ComponentId="{1CF45222-ECD7-4987-9DD0-4F9B327AC90D}" Directory_="APPDIR" Attributes="4" KeyPath="Version"/>
+    <ROW Component="Symbolabasic.eot" ComponentId="{7BE23E9F-A9B7-44E9-ABBC-F5347001B5C0}" Directory_="font_Dir" Attributes="0" KeyPath="Symbolabasic.eot" Type="0"/>
+    <ROW Component="am.pak" ComponentId="{D937381A-80DB-40AA-876E-A07C8DC150C7}" Directory_="locales_Dir" Attributes="0" KeyPath="am.pak" Type="0"/>
+    <ROW Component="apimswincoreconsolel110.dll" ComponentId="{4D8BB371-0DD6-4D57-AA4D-23358352FADC}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincoreconsolel110.dll"/>
+    <ROW Component="apimswincoredatetimel110.dll" ComponentId="{37322754-790D-4B7C-B21E-C16122CC5BD2}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincoredatetimel110.dll"/>
+    <ROW Component="apimswincoredebugl110.dll" ComponentId="{95F0055E-6884-4CB6-9012-5AF71EAEDACB}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincoredebugl110.dll"/>
+    <ROW Component="apimswincoreerrorhandlingl110.dll" ComponentId="{DE3F152E-DEA2-4045-AF90-148E6107469F}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincoreerrorhandlingl110.dll"/>
+    <ROW Component="apimswincorefilel110.dll" ComponentId="{FB97D0B9-0716-4ED4-A93E-21E8548FD632}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincorefilel110.dll"/>
+    <ROW Component="apimswincorefilel120.dll" ComponentId="{980E93C4-3DA6-4A12-978A-45ACE2996F6E}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincorefilel120.dll"/>
+    <ROW Component="apimswincorefilel210.dll" ComponentId="{8D9E8CB6-CBFF-4255-8035-DB60993EC108}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincorefilel210.dll"/>
+    <ROW Component="apimswincorehandlel110.dll" ComponentId="{57D6C09B-7E97-45DB-B633-B67E0AA37DAA}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincorehandlel110.dll"/>
+    <ROW Component="apimswincoreheapl110.dll" ComponentId="{A6DF8CBE-1055-41BD-8A6C-CF1743AEA3A7}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincoreheapl110.dll"/>
+    <ROW Component="apimswincoreinterlockedl110.dll" ComponentId="{3BA02C36-BFB3-4E18-9E8B-E9E36DEE3FAA}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincoreinterlockedl110.dll"/>
+    <ROW Component="apimswincorelibraryloaderl110.dll" ComponentId="{E8DC5036-F411-49DF-BE3D-212FE9CB4644}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincorelibraryloaderl110.dll"/>
+    <ROW Component="apimswincorelocalizationl120.dll" ComponentId="{BEAA243A-50EA-4C75-949D-961409A313B2}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincorelocalizationl120.dll"/>
+    <ROW Component="apimswincorememoryl110.dll" ComponentId="{EEBD2B0A-F2A2-4855-9FBB-B48DA9B8B41A}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincorememoryl110.dll"/>
+    <ROW Component="apimswincorenamedpipel110.dll" ComponentId="{D3A69B46-EBE5-4AE1-A6A7-007B1AFC7A30}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincorenamedpipel110.dll"/>
+    <ROW Component="apimswincoreprocessenvironmentl110.dll" ComponentId="{15ED6E5B-98D7-4307-B706-6000237E0506}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincoreprocessenvironmentl110.dll"/>
+    <ROW Component="apimswincoreprocessthreadsl110.dll" ComponentId="{55AC536C-BFDD-4C8F-89C5-3019F894DC51}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincoreprocessthreadsl110.dll"/>
+    <ROW Component="apimswincoreprocessthreadsl111.dll" ComponentId="{AFC1401E-A150-484E-974B-326B9A85836A}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincoreprocessthreadsl111.dll"/>
+    <ROW Component="apimswincoreprofilel110.dll" ComponentId="{BC4C5017-2D0E-480C-80DA-700F399B5615}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincoreprofilel110.dll"/>
+    <ROW Component="apimswincorertlsupportl110.dll" ComponentId="{CD4AC260-ACF0-48D0-8F8C-2F7E96B276F1}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincorertlsupportl110.dll"/>
+    <ROW Component="apimswincorestringl110.dll" ComponentId="{19AFF025-229C-49D7-AF5A-81E7039F9A15}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincorestringl110.dll"/>
+    <ROW Component="apimswincoresynchl110.dll" ComponentId="{EA5797F0-9069-409F-852D-08826183E0C3}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincoresynchl110.dll"/>
+    <ROW Component="apimswincoresynchl120.dll" ComponentId="{AE62329E-38EA-42A5-B6D1-1ADACF0D66A1}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincoresynchl120.dll"/>
+    <ROW Component="apimswincoresysinfol110.dll" ComponentId="{46EF1817-00EF-4F46-8A3D-C21BB8F3CE2B}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincoresysinfol110.dll"/>
+    <ROW Component="apimswincoretimezonel110.dll" ComponentId="{0D8C62DC-9115-43B4-BE1C-881AFDCAAF04}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincoretimezonel110.dll"/>
+    <ROW Component="apimswincoreutill110.dll" ComponentId="{EDCD8376-521B-4EFE-857D-E7AC97BE0E2B}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincoreutill110.dll"/>
+    <ROW Component="apimswincrtconiol110.dll" ComponentId="{EFB6A475-2745-4EBE-945E-47649186AF12}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincrtconiol110.dll"/>
+    <ROW Component="apimswincrtconvertl110.dll" ComponentId="{60E8794B-8A54-4236-9B5F-554606915707}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincrtconvertl110.dll"/>
+    <ROW Component="apimswincrtenvironmentl110.dll" ComponentId="{80A9DB76-C96D-4FA3-8694-81E2DACD7C41}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincrtenvironmentl110.dll"/>
+    <ROW Component="apimswincrtfilesysteml110.dll" ComponentId="{6A7D9105-1BE5-4E46-AAC3-86DA028E3565}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincrtfilesysteml110.dll"/>
+    <ROW Component="apimswincrtheapl110.dll" ComponentId="{4DD4F5E8-402B-4744-AC97-79C52C4A7638}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincrtheapl110.dll"/>
+    <ROW Component="apimswincrtlocalel110.dll" ComponentId="{FC866B27-6056-4427-BD66-F9675DDA1623}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincrtlocalel110.dll"/>
+    <ROW Component="apimswincrtmathl110.dll" ComponentId="{356F7BC6-F08E-4C84-B4DC-2A5885F5A25C}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincrtmathl110.dll"/>
+    <ROW Component="apimswincrtmultibytel110.dll" ComponentId="{2E12C23B-98F1-4167-BA01-EEEBD63FE98E}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincrtmultibytel110.dll"/>
+    <ROW Component="apimswincrtprivatel110.dll" ComponentId="{CAF8F6E5-E899-464B-8F26-414DD61DF121}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincrtprivatel110.dll"/>
+    <ROW Component="apimswincrtprocessl110.dll" ComponentId="{77160A0B-E964-4113-92FF-3E0F315E631B}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincrtprocessl110.dll"/>
+    <ROW Component="apimswincrtruntimel110.dll" ComponentId="{1E2E4A4B-6CEF-403B-8721-DBC206126178}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincrtruntimel110.dll"/>
+    <ROW Component="apimswincrtstdiol110.dll" ComponentId="{E35FB276-453A-41B1-A9B9-1AE35B1752EE}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincrtstdiol110.dll"/>
+    <ROW Component="apimswincrtstringl110.dll" ComponentId="{2CB7A479-8704-4F56-BFFF-387D7F14F479}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincrtstringl110.dll"/>
+    <ROW Component="apimswincrttimel110.dll" ComponentId="{6A669BA4-0F67-49DE-AA25-B3E1AF376A69}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincrttimel110.dll"/>
+    <ROW Component="apimswincrtutilityl110.dll" ComponentId="{E740D7D2-3B33-48B1-A41E-89DADEBE231F}" Directory_="APPDIR" Attributes="256" KeyPath="apimswincrtutilityl110.dll"/>
+    <ROW Component="bamboowoodtexture.jpg" ComponentId="{97B71859-EFBC-4AEF-BF21-8DA27CBC402A}" Directory_="img_Dir" Attributes="0" KeyPath="bamboowoodtexture.jpg" Type="0"/>
+    <ROW Component="blink_image_resources_200_percent.pak" ComponentId="{22DA7BDB-F543-4111-A20E-5020C1CFDD82}" Directory_="APPDIR" Attributes="0" KeyPath="blink_image_resources_200_percent.pak" Type="0"/>
+    <ROW Component="bootstrap.js" ComponentId="{7D94E489-CE55-43A4-864E-68D591BC649C}" Directory_="js_Dir" Attributes="0" KeyPath="bootstrap.js" Type="0"/>
+    <ROW Component="bootstraptheme.css" ComponentId="{C7E780AF-2946-49F6-93E7-E39E11A182D9}" Directory_="css_Dir" Attributes="0" KeyPath="bootstraptheme.css" Type="0"/>
+    <ROW Component="core.js" ComponentId="{C03437EA-DBEF-4667-8849-F2AE0DA0F838}" Directory_="dist_1_Dir" Attributes="0" KeyPath="core.js" Type="0"/>
+    <ROW Component="core_styles.css" ComponentId="{3FE98A67-C8C0-4A0E-AFCA-FE13C27CF3A9}" Directory_="app_Dir" Attributes="0" KeyPath="core_styles.css" Type="0"/>
+    <ROW Component="d3dcompiler_47.dll" ComponentId="{BDB47FFB-E251-4931-94E4-47A6CB12AAB9}" Directory_="APPDIR" Attributes="256" KeyPath="d3dcompiler_47.dll"/>
+    <ROW Component="electron.asar" ComponentId="{AD2EDD62-BF82-4A48-B285-54AAC419FB8F}" Directory_="resources_Dir" Attributes="0" KeyPath="electron.asar" Type="0"/>
+    <ROW Component="ffmpeg.dll" ComponentId="{0CDD9078-ED52-4730-A501-77EB47A8614A}" Directory_="APPDIR" Attributes="256" KeyPath="ffmpeg.dll"/>
+    <ROW Component="glyphiconshalflingsregular.eot" ComponentId="{47E45A81-FDA3-43A9-ADC9-E0D06F91D0D4}" Directory_="fonts_Dir" Attributes="0" KeyPath="glyphiconshalflingsregular.eot" Type="0"/>
+    <ROW Component="libEGL.dll" ComponentId="{C5A3E224-519E-4641-9ED4-A5AE4AC51B29}" Directory_="APPDIR" Attributes="256" KeyPath="libEGL.dll"/>
+    <ROW Component="libGLESv2.dll" ComponentId="{DD7238D3-A93B-42D0-93A5-41B080A41994}" Directory_="APPDIR" Attributes="256" KeyPath="libGLESv2.dll"/>
+    <ROW Component="mathquill.css" ComponentId="{16CEC0D9-A829-4CB4-95EA-7D4ED66E0AEB}" Directory_="build_Dir" Attributes="0" KeyPath="mathquill.css" Type="0"/>
+    <ROW Component="msvcp140.dll" ComponentId="{0CEF41DA-B4FE-4C41-805E-C89C3B6728BA}" Directory_="APPDIR" Attributes="256" KeyPath="msvcp140.dll"/>
+    <ROW Component="node.dll" ComponentId="{2922F260-4E71-4323-B60F-BE9FD1C50ED8}" Directory_="APPDIR" Attributes="256" KeyPath="node.dll"/>
+    <ROW Component="projectdelta.exe" ComponentId="{90C2A8B6-B0DD-446C-9F4E-E7F1ACB07B59}" Directory_="APPDIR" Attributes="256" KeyPath="projectdelta.exe"/>
+    <ROW Component="ucrtbase.dll" ComponentId="{0F6155E2-FC11-4D30-8928-C6C3257A8156}" Directory_="APPDIR" Attributes="256" KeyPath="ucrtbase.dll"/>
+    <ROW Component="vcruntime140.dll" ComponentId="{42230ED2-9B17-40AF-819B-B9374021590B}" Directory_="APPDIR" Attributes="256" KeyPath="vcruntime140.dll"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiFeatsComponent">
     <ROW Feature="MainFeature" Title="MainFeature" Description="Description" Display="1" Level="1" Directory_="APPDIR" Attributes="0" Components="ProductInformation Symbolabasic.eot am.pak apimswincoreconsolel110.dll apimswincoredatetimel110.dll apimswincoredebugl110.dll apimswincoreerrorhandlingl110.dll apimswincorefilel110.dll apimswincorefilel120.dll apimswincorefilel210.dll apimswincorehandlel110.dll apimswincoreheapl110.dll apimswincoreinterlockedl110.dll apimswincorelibraryloaderl110.dll apimswincorelocalizationl120.dll apimswincorememoryl110.dll apimswincorenamedpipel110.dll apimswincoreprocessenvironmentl110.dll apimswincoreprocessthreadsl110.dll apimswincoreprocessthreadsl111.dll apimswincoreprofilel110.dll apimswincorertlsupportl110.dll apimswincorestringl110.dll apimswincoresynchl110.dll apimswincoresynchl120.dll apimswincoresysinfol110.dll apimswincoretimezonel110.dll apimswincoreutill110.dll apimswincrtconiol110.dll apimswincrtconvertl110.dll apimswincrtenvironmentl110.dll apimswincrtfilesysteml110.dll apimswincrtheapl110.dll apimswincrtlocalel110.dll apimswincrtmathl110.dll apimswincrtmultibytel110.dll apimswincrtprivatel110.dll apimswincrtprocessl110.dll apimswincrtruntimel110.dll apimswincrtstdiol110.dll apimswincrtstringl110.dll apimswincrttimel110.dll apimswincrtutilityl110.dll bamboowoodtexture.jpg blink_image_resources_200_percent.pak bootstrap.js bootstraptheme.css core.js core_styles.css d3dcompiler_47.dll electron.asar ffmpeg.dll glyphiconshalflingsregular.eot libEGL.dll libGLESv2.dll mathquill.css msvcp140.dll node.dll projectdelta.exe ucrtbase.dll vcruntime140.dll"/>
@@ -198,7 +194,7 @@
     <ROW File="da.pak" Component_="am.pak" FileName="da.pak" Attributes="0" SourcePath="..\build\locales\da.pak" SelfReg="false" NextFile="de.pak"/>
     <ROW File="de.pak" Component_="am.pak" FileName="de.pak" Attributes="0" SourcePath="..\build\locales\de.pak" SelfReg="false" NextFile="el.pak"/>
     <ROW File="el.pak" Component_="am.pak" FileName="el.pak" Attributes="0" SourcePath="..\build\locales\el.pak" SelfReg="false" NextFile="enGB.pak"/>
-    <ROW File="electron.asar" Component_="electron.asar" FileName="ELECTR~1.ASA|electron.asar" Attributes="0" SourcePath="..\build\resources\electron.asar" SelfReg="false"/>
+    <ROW File="electron.asar" Component_="electron.asar" FileName="ELECTR~1.ASA|electron.asar" Attributes="0" SourcePath="..\build\resources\electron.asar" SelfReg="false" NextFile="apimswincoreconsolel110.dll"/>
     <ROW File="enGB.pak" Component_="am.pak" FileName="en-GB.pak" Attributes="0" SourcePath="..\build\locales\en-GB.pak" SelfReg="false" NextFile="enUS.pak"/>
     <ROW File="enUS.pak" Component_="am.pak" FileName="en-US.pak" Attributes="0" SourcePath="..\build\locales\en-US.pak" SelfReg="false" NextFile="es419.pak"/>
     <ROW File="es.pak" Component_="am.pak" FileName="es.pak" Attributes="0" SourcePath="..\build\locales\es.pak" SelfReg="false" NextFile="et.pak"/>
@@ -278,7 +274,7 @@
     <ROW File="vcruntime140.dll" Component_="vcruntime140.dll" FileName="VCRUNT~1.DLL|vcruntime140.dll" Attributes="0" SourcePath="..\build\vcruntime140.dll" SelfReg="false" NextFile="version"/>
     <ROW File="version" Component_="blink_image_resources_200_percent.pak" FileName="version" Attributes="0" SourcePath="..\build\version" SelfReg="false" NextFile="views_resources_200_percent.pak"/>
     <ROW File="vi.pak" Component_="am.pak" FileName="vi.pak" Attributes="0" SourcePath="..\build\locales\vi.pak" SelfReg="false" NextFile="zhCN.pak"/>
-    <ROW File="views_resources_200_percent.pak" Component_="blink_image_resources_200_percent.pak" FileName="VIEWS_~1.PAK|views_resources_200_percent.pak" Attributes="0" SourcePath="..\build\views_resources_200_percent.pak" SelfReg="false" NextFile="am.pak"/>
+    <ROW File="views_resources_200_percent.pak" Component_="blink_image_resources_200_percent.pak" FileName="VIEWS_~1.PAK|views_resources_200_percent.pak" Attributes="0" SourcePath="..\build\views_resources_200_percent.pak" SelfReg="false"/>
     <ROW File="zhCN.pak" Component_="am.pak" FileName="zh-CN.pak" Attributes="0" SourcePath="..\build\locales\zh-CN.pak" SelfReg="false" NextFile="zhTW.pak"/>
     <ROW File="zhTW.pak" Component_="am.pak" FileName="zh-TW.pak" Attributes="0" SourcePath="..\build\locales\zh-TW.pak" SelfReg="false" NextFile="bamboowoodtexture.jpg"/>
   </COMPONENT>
@@ -348,7 +344,7 @@
     <ROW Action="SET_TARGETDIR_TO_APPDIR" Type="51" Source="TARGETDIR" Target="[APPDIR]"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiIconsComponent">
-    <ROW Name="projectdelta.exe" SourcePath="..\build\resources\app\assets\img\icon.ico" Index="0"/>
+    <ROW Name="icon.exe" SourcePath="..\build\resources\app\assets\img\icon.ico" Index="0"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiInstExSeqComponent">
     <ROW Action="AI_DOWNGRADE" Condition="AI_NEWERPRODUCTFOUND AND (UILevel &lt;&gt; 5)" Sequence="210"/>
@@ -375,8 +371,8 @@
     <ROW Registry="Version" Root="-1" Key="Software\[Manufacturer]\[ProductName]" Name="Version" Value="[ProductVersion]" Component_="ProductInformation"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiShortsComponent">
-    <ROW Shortcut="ProjectDelta" Directory_="DesktopFolder" Name="PROJEC~1|Project Delta" Component_="projectdelta.exe" Target="[#projectdelta.exe]" Hotkey="0" Icon_="projectdelta.exe" IconIndex="0" ShowCmd="1" WkDir="APPDIR"/>
-    <ROW Shortcut="ProjectDelta_1" Directory_="StartMenuFolder" Name="PROJEC~1|Project Delta" Component_="projectdelta.exe" Target="[#projectdelta.exe]" Hotkey="0" Icon_="projectdelta.exe" IconIndex="0" ShowCmd="1" WkDir="APPDIR"/>
+    <ROW Shortcut="ProjectDelta" Directory_="StartMenuFolder" Name="PROJEC~1|Project Delta" Component_="projectdelta.exe" Target="[#projectdelta.exe]" Hotkey="0" Icon_="icon.exe" IconIndex="0" ShowCmd="1" WkDir="APPDIR"/>
+    <ROW Shortcut="ProjectDelta_1" Directory_="DesktopFolder" Name="PROJEC~1|Project Delta" Component_="projectdelta.exe" Target="[#projectdelta.exe]" Hotkey="0" Icon_="icon.exe" IconIndex="0" ShowCmd="1" WkDir="APPDIR"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiThemeComponent">
     <ATTRIBUTE name="UsedTheme" value="classic"/>
