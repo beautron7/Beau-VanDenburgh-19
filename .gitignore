@@ -6,3 +6,6 @@ project-delta.wixobj
 project-delta.wixpdb
 project-delta.wxs
 project-delta.msi
+
+WINBUILDER/*
+!/WINBUILDER/winbuilder.aip

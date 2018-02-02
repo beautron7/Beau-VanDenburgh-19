@@ -18,7 +18,23 @@ packager(config = {
     );
     console.log(err);
   })
-  .then(cleanUp)
+  .then(function (path) {
+    console.log("cleaning up...")
+    fs.renameSync(path[0],'./build')
+    fs.rmdirSync('./tmp')
+
+    var node_modules = "./build/resources/app/node_modules"
+    var important_folders = ["build","dist"];
+
+    fs.readdirSync(node_modules).forEach( library => {
+      fs.readdirSync(node_modules + '/' + library)
+        .filter (subfolder => !important_folders.includes(subfolder))
+        .forEach(subfolder => {
+          deleteFolderRecursive(node_modules + "/" + library + "/" + subfolder)
+        });
+    });
+    deleteAnythingThatStartsWithPeriods("./build");
+  })
   .then(function () {//success!
     console.log(
       "                     \r"+
@@ -29,14 +45,6 @@ packager(config = {
       "You can copy the folder inside ./build to your desktop, and launch the program by double clicking on Project-Delta.app or Project-Delta.exe. type `npm run msi` to make a windows installer if you are on windows"
     );
   })
-
-
-function onFail(err) {
-  console.log(
-    "Errors were encountered:"
-  );
-  console.log(err);
-}
 
 function deleteFolderRecursive(path) {
   if( fs.existsSync(path) ) {
@@ -62,6 +70,10 @@ function deleteFolderRecursive(path) {
   }
 };
 
+function updateDeleteProgress(str){
+  process.stdout.write(`${processed_files++} files deleted\r`);
+}
+
 function deleteAnythingThatStartsWithPeriods(path) {
   if( fs.existsSync(path) ) {
     fs.readdirSync(path).forEach(function(file,index){
@@ -69,31 +81,9 @@ function deleteAnythingThatStartsWithPeriods(path) {
       if(fs.lstatSync(curPath).isDirectory()) { // recurse
         deleteAnythingThatStartsWithPeriods(curPath);
       } else if(file[0]==".") { // delete file
-        console.log('')
+        console.log(file)
         fs.unlinkSync(curPath);
       }
     });
   }
 };
-
-function updateDeleteProgress(str){
-  process.stdout.write(`${processed_files++} files deleted\r`);
-}
-
-function cleanUp(path) {
-  console.log("cleaning up...")
-    fs.renameSync(path[0],'./build')
-    fs.rmdirSync('./tmp')
-    deleteAnythingThatStartsWithPeriods("./build");
-
-  var node_modules = "./build/resources/app/node_modules"
-  var important_folders = ["build","dist"];
-
-  fs.readdirSync(node_modules).forEach( library => {
-    fs.readdirSync(node_modules + '/' + library)
-      .filter (subfolder => !important_folders.includes(subfolder))
-      .forEach(subfolder => {
-        deleteFolderRecursive(node_modules + "/" + library + "/" + subfolder)
-      });
-  });
-}

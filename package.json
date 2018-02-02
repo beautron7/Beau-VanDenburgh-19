@@ -8,6 +8,7 @@
   "dependencies": {
     "electron": "^1.8.1",
     "electron-packager": "^10.1.2",
+    "ncp": "^2.0.0",
     "project-delta": "file:src",
     "promptly": "^3.0.3"
   },
