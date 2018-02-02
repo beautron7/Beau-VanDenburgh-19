@@ -1,7 +1,7 @@
 {
-  "name": "Project-Delta",
+  "name": "project-delta",
   "description": "Use MathQuill to type out notes for math",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "author": "Beau <beauvandenburgh19@newmanschool.org>",
   "main": "electron ./src",
