@@ -9,7 +9,7 @@ deleteFolderRecursive("./build");
 
 packager(config = {
   dir:"./src", //location of source files
-  icon:"./src/assets/img/icon.ico", //location of the icon
+  icon:"./src/assets/img/logo_full_fuzzy.ico", //location of the icon
   out:"./tmp", //where to put the executable
 })
   .catch(err=>{//log build errors
@@ -20,6 +20,7 @@ packager(config = {
   })
   .then(function (path) {
     console.log("cleaning up...")
+    console.log(path)
     fs.renameSync(path[0],'./build')
     fs.rmdirSync('./tmp')
 
