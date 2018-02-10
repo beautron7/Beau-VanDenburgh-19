@@ -72,3 +72,21 @@
 .top-spacer{
   margin:3cm;
 }
+
+/* hack to fix broken nthroot syntax */
+  sup.mq-nthroot {
+    top:0;
+  }
+
+/* allows for the typing of indefinite integrals */
+  .mq-int > .mq-supsub .mq-sup-inner.mq-empty:not(.mq-hasCursor),
+  .mq-int > .mq-supsub .mq-sup-inner.mq-empty:not(.mq-hasCursor) *
+  {
+    width: 0;
+    display: inline-block;
+  }
+  .mq-int > .mq-supsub .mq-sub.mq-empty:not(.mq-hasCursor),
+  .mq-int > .mq-supsub .mq-sub.mq-empty:not(.mq-hasCursor) * {
+    width: 0;
+    display: inline-block;  
+  }
